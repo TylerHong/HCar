@@ -1,0 +1,13 @@
+{% if cars %}
+    <ul>
+        {% for car in cars %}
+        <li>{{ car.cid }}</li>
+        <li>{{ car.mid }}</li>
+        <li>{{ car.cname }}</li>
+        <li>{{ car.ccode }}</li>
+        <li>{{ car.trim }}</li>
+        {% endfor %}
+    </ul>
+{% else %}
+    <p>No polls are available.</p>
+{% endif %}

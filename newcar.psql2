@@ -1,0 +1,37 @@
+insert into newcar_car (mid_id, cname, ccode, trim) values 
+  (1, '쏘나타YF', 'YF2014', 'CVVL Style 수동');
+insert into newcar_car (mid_id, cname, ccode, trim) values 
+  (1, '쏘나타YF', 'YF2014', 'CVVL Style 자동');
+insert into newcar_car (mid_id, cname, ccode, trim) values 
+  (2, 'K5', 'K52014', '디럭스 수동');
+insert into newcar_car (mid_id, cname, ccode, trim) values 
+  (2, 'K5', 'K52014', '디럭스 자동');
+insert into newcar_car (mid_id, cname, ccode, trim) values 
+  (2, 'K3', 'K32014', '1.6 디젤 럭셔리');
+insert into newcar_car (mid_id, cname, ccode, trim) values 
+  (2, 'K3', 'K32014', '1.6 디젤 럭셔리');
+insert into newcar_car (mid_id, cname, ccode, trim) values
+  (2, 'K3', 'K32014', '1.6 가솔린 해치백');
+insert into newcar_car (mid_id, cname, ccode, trim) values
+  (6, 'C클래스', 'C2014', 'C200');
+insert into newcar_car (mid_id, cname, ccode, trim) values
+  (6, 'C클래스', 'C2014', 'C200 아방가르드');
+insert into newcar_car (mid_id, cname, ccode, trim) values
+  (6, 'C클래스', 'C2014', 'C220 CDI');
+insert into newcar_car (mid_id, cname, ccode, trim) values
+  (7, '1시리즈', '1ER2014', '118D Urban Line');
+insert into newcar_car (mid_id, cname, ccode, trim) values
+  (7, '1시리즈', '1ER2014', '118D Urban Line Pack1');
+insert into newcar_car (mid_id, cname, ccode, trim) values
+  (7, '1시리즈', '1ER2014', '118D Urban Line Pack2');
+insert into newcar_car (mid_id, cname, ccode, trim) values
+  (7, '1시리즈', '1ER2014', '118D Urban Line M Edition');
+insert into newcar_car (mid_id, cname, ccode, trim) values
+  (7, '1시리즈', '1ER2014', '120D Sport Line');
+insert into newcar_car (mid_id, cname, ccode, trim) values
+  (7, '3시리즈', '3ER2014', '320D ED');
+insert into newcar_car (mid_id, cname, ccode, trim) values
+  (7, '3시리즈', '3ER2014', '320D Navi');
+insert into newcar_car (mid_id, cname, ccode, trim) values
+  (7, '3시리즈', '3ER2014', '320D 모던');
+

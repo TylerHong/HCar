@@ -1,0 +1,27 @@
+<html>
+<body>
+{% if cars %}
+    Cars are available.<br><br>
+    <table border=1 cellpadding=5 cellspacing=2>
+    <tr>
+        <td>CID</td>
+        <td>MID</td>
+        <td>차종</td>
+        <td>CCODE</td>
+        <td>트림</td>
+    </tr>
+    {% for car in cars %}
+    <tr>
+        <td>{{ car.cid }}</td>
+        <td>{{ car.mid }}</td>
+        <td>{{ car.cname }}</td>
+        <td>{{ car.ccode }}</td>
+        <td>{{ car.trim }}</td>
+    </tr>
+    {% endfor %}
+    </table>
+{% else %}
+    <p>No cars are available.</p>
+{% endif %}
+</body>
+</html>

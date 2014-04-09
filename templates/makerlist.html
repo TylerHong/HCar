@@ -1,0 +1,23 @@
+<html>
+<body>
+{% if makers %}
+    Makers are available.<br><br>
+    <table border=1 cellpadding=5 cellspacing=1>
+    <tr>
+        <td>MID</td>
+        <td>MCODE</td>
+        <td>메이커명</td>
+    </tr>
+    {% for maker in makers %}
+    <tr>
+        <td>{{ maker.mid }}</td>
+        <td>{{ maker.mcode }}</td>
+        <td>{{ maker.mname }}</td>
+    </tr>
+    {% endfor %}
+    </table>
+{% else %}
+    <p>No makers are available.</p>
+{% endif %}
+</body>
+</html>

@@ -1,0 +1,2 @@
+curl -X POST 0.0.0.0:80/hcar/registbuy -H 'Content-Type: application/json' -d '{"mid":"1", "cid":"1", "is_lease":"False", "is_new":"True", "year":"2014", "nickname":"kshong", "cellphone":"1234", "email":"email@email.com", "passwd":"passwd", "detail":"", "city":"서울시", "addr1":"강남구", "addr2":""}'
+
