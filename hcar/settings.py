@@ -98,3 +98,9 @@ REST_FRAMEWORK = {
 
 # 템플릿 디렉토리 지정
 TEMPLATE_DIRS = ( os.path.join(BASE_DIR, 'templates'), )
+
+# 메일서버 설정
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_HOST_USER = 'ksyh0116@gmail.com'
+EMAIL_HOST_PASSWORD = 'kyh02057'

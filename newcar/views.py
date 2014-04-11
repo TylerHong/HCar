@@ -2,9 +2,12 @@
 from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.response import Response
+#from django.template.loader import render_to_string
+#from django.core.mail import EmailMultiAlternatives
+from django.core.mail import send_mail
 
 from newcar.models import Maker, Car, Buy
-from newcar.serializers import MakerSerializer, CarSerializer, BuyRegisterSerializer
+from newcar.serializers import MakerSerializer, CarSerializer, BuyRequestSerializer, BuyListFreeSerializer
 
 import pdb;
 
@@ -42,34 +45,83 @@ class CarList(APIView):
                 return Response(serializer.data)
 
 # 구매요청 등록 뷰
-class RegisterBuy(APIView):
+class BuyRequest(APIView):
+    def send_email(self, bid, to):
+        subject = 'Confirm message from hcar'
+        text_content = 'This is important message.'
+        html_content = render_to_string('html_confirm.html', {'id': bid})
+#        msg = EmailMultiAlternatives(subject, text_content, 'kisoohong@gmail.com' , [to])
+#        msg.attach_alternative(html_content, "text/html")
+        pdb.set_trace()
+#        msg.send()
+        send_mail(subject, html_content, 'kisoohong@gmail.com', [to])
+
     def post(self, request, format=None):
         pdb.set_trace()
-        serializer = BuyRegisterSerializer(data=request.DATA)
+        serializer = BuyRequestSerializer(data=request.DATA)
         if serializer.is_valid():
-            # 동일 전화번호/이메일로 구매 요청이 있는지 확인
-            try:
-                oldReq = Buy.objects.get(email=serializer.data['email'], is_done=False)
-            except Buy.DoesNotExist:
-                try:
-                    oldReq = Buy.objects.get(email=serializer.data['email'])
-                except Buy.DoesNotExist:
-                    serializer.save()
-                    data = {'msg':'saved', 'errcode':'000'}
-                    return Response(data, status = status.HTTP_201_CREATED)
-                else:
-                    data = {'msg':'save failed. same email exists', 'errcode':'101'}
+            # 동일 이메일로 완료되지 않은 구매 요청이 있는지 확인
+            oldReqs = Buy.objects.filter(email=serializer.data['email']).filter(is_done=False)
+            if (oldReqs.count() > 0):
+                data = {'msg':'save failed. same email exists', 'errcode':'101'}
+                respStatus = status.HTTP_409_CONFLICT
             else:
-                data = {'msg':'save failed. same phone exists', 'errcode':'101'}
-                return Response(data, status = status.HTTP_503_SERVICE_UNAVAILABLE)
+                serializer.save()
+                # 저장후 구매 요청 확인 메일 송신
+                buy = Buy.objects.filter(email=serializer.data['email']).filter(is_done=False)
+                self.send_email(buy[0].bid, buy[0].email)
+                data = {'msg':'saved', 'errcode':'000'}
+                respStatus = status.HTTP_201_CREATED
         else:
             data = {'msg':'invalid request', 'errcode':'102'}
-            return Response(data, status = status.HTTP_503_SERVICE_UNAVAILABLE)
+            respStatus = status.HTTP_400_BAD_REQUEST
+        return Response(data, status = respStatus)
 
-# 구매요청 검색 뷰
-class FindBuy(APIView):
-    def get(self, request, mid, cid, is_lease, city='ANY', addr1='ANY', addr2='ANY', req_date=0, format=None):
-        if (mid <= 0 or cid <=0):
-            response.status_code = status.HTTP_400_BAD_REQUEST
-        return response
+# 구매요청 검증 뷰
+class ConfirmBuy(APIView):
+    def get(self, request, bid, format=None):
+        pdb.set_trace()
+        bid = int(bid)
+        if (bid < 0):
+            respStatus = status.HTTP_400_BAD_REQUEST
+        else:
+            try:
+                buy = Buy.objects.get(bid=bid)
+                buy.is_confirmed = True
+                buy.save()
+                respStatus = status.HTTP_200_OK
+                data = "<H1> CONFIRMED <H1>"
+            except Buy.DoesNotExist:
+                respStatus = status.HTTP_400_BAD_REQUEST
+        return Response(data, status = respStatus)
+
+# 구매요청 검색 뷰 for anyone
+class BuyListFree(APIView):
+    def get(self, request, mid, cid, city='ANY', format=None):
+        pdb.set_trace()
+        mid = int(mid)
+        cid = int(cid)
+        if (mid <= 0):
+            data = {'msg':'invalid mid', 'errcode':'202'}
+            return Response(data, status = status.HTTP_400_BAD_REQUEST)
+        elif (cid < 0):
+            data = {'msg':'invalid cid', 'errcode':'203'}
+            return Response(data, status = status.HTTP_400_BAD_REQUEST)
+
+        if (cid == 0):
+            buyreqs = Buy.objects.filter(mid=mid).filter(is_confirmed=True)
+        else:
+            buyreqs = Buy.objects.filter(mid=mid).filter(cid=cid).filter(is_confirmed=True)
+        if (buyreqs.count() > 0 and city <> 'ANY'):
+            buyreqs = buyreqs.filter(city__contains=city)
+
+        if (buyreqs.count() == 0):
+            data = {'msg':'no data', 'errcode':'201'}
+            return Response(data, status = status.HTTP_400_BAD_REQUEST)
+        elif (buyreqs.count() == 1):
+            serializer = BuyListFreeSerializer(buyreqs)
+            return Response(serializer.data)
+        else:
+            serializer = BuyListFreeSerializer(buyreqs, many=True)
+            return Response(serializer.data)
 
