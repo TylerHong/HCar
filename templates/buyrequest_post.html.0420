@@ -1,0 +1,41 @@
+<html>
+	<head>
+		<title>구매요청 등록</title>
+	</head>
+	<body>
+{% if makers %}
+    Makers are available.<br><br>
+    <table border=1 cellpadding=5 cellspacing=1>
+    <tr>
+        <td>MID</td>
+        <td>MCODE</td>
+        <td>메이커명</td>
+    </tr>
+    {% for maker in makers %}
+    <tr>
+        <td>{{ maker.mid }}</td>
+        <td>{{ maker.mcode }}</td>
+        <td>{{ maker.mname }}</td>
+    </tr>
+    {% endfor %}
+    </table>
+{% else %}
+    <p>No makers are available.</p>
+{% endif %}
+
+<h1>구매요청 등록</h1>
+<form method="post" action="./buyrequest">
+{% csrf_token %}
+<p><label for="nickname">고객명(닉네임):</label>
+{{ form.nickname }} </p>
+<p><label for="cellphone">휴대전화번호(선택):</label>
+{{ form.cellphone }}</p>
+<p><label for="email">이메일주소:</label>
+{{ form.email }}</p>
+<p><label for="passwd">비밀번호:</label>
+{{ form.passwd }}</p>
+<input type="submit" value="등록" />
+</form>
+</body>
+</html>
+

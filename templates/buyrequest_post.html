@@ -1,0 +1,14 @@
+<html>
+	<head>
+		<title>구매요청 등록</title>
+	</head>
+	<body>
+<h1>구매요청 등록</h1>
+<form method="post" action="./buyrequest">
+{% csrf_token %}
+{{ form.as_p }}
+<input type="submit" value="등록" />
+</form>
+</body>
+</html>
+

@@ -100,7 +100,10 @@ REST_FRAMEWORK = {
 TEMPLATE_DIRS = ( os.path.join(BASE_DIR, 'templates'), )
 
 # 메일서버 설정
-EMAIL_HOST = 'smtp.gmail.com'
-EMAIL_PORT = 587
-EMAIL_HOST_USER = 'ksyh0116@gmail.com'
+#M_EMAIL = 'kshong@coche.dnip.net'
+#SERVER_EMAIL = 'kshong@coche.dnip.net'
+EMAIL_USE_TLS = True
+EMAIL_HOST = 'localhost'
+EMAIL_PORT = 25
+EMAIL_HOST_USER = 'kshong'
 EMAIL_HOST_PASSWORD = 'kyh02057'

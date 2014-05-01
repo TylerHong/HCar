@@ -34,7 +34,7 @@ class TestBuyListFree(TestCase):
 
 #  def test_register_request_success(self):
     json_str = {"mid":1, "cid":1, "is_lease":"False", "is_new":"True", "year":"2014", "nickname":"kshong",
-      "cellphone":"1234", "email":"tctgkiss@hanmail.net", "passwd":"passwd", "detail":"", "city":"서울시",
+      "cellphone":"1234", "email":"kisoohong@gmail.com", "passwd":"passwd", "detail":"", "city":"서울시",
       "addr1":"강남구", "addr2":""}
     self.response = self.c.post('/hcar/buyrequest/', json.dumps(json_str), content_type='application/json')
     pdb.set_trace()

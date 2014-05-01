@@ -14,9 +14,9 @@ import pdb;
 
 # 제조사 및 자동차 리스트를 가져오는 REST 뷰
 class CarList(APIView):
-    def get(self, request, mid='0', cnid='0', cid='0', format=None):
+    def get(self, request, mcode='aa', ccode='ANY', format=None):
         # 아무 조건도 없다면 메이커 명을 리턴
-        if (mid == '0'):
+        if (mcode == 'aa'):
             makers = Maker.objects.all().order_by('mid')
             if request.accepted_renderer.format == 'html':
                 data = {'makers': makers}
@@ -25,20 +25,19 @@ class CarList(APIView):
                 serializer = MakerSerializer(makers, many=True)
                 return Response(serializer.data)
         # 메이커명이 주어졌다면 자동차명을 리턴
-        elif (mid <> '0' and cnid == '0'):
-            maker = Maker.objects.filter(mid=mid)
-            car_names = CarName.objects.filter(mid=maker).order_by('cnid')
+        elif (mcode <> 'aa' and ccode == 'ANY'):
+            maker = Maker.objects.filter(mcode=mcode).order_by('mid')
+            cars = Car.objects.filter(mid=maker).order_by('cid')
             if request.accepted_renderer.format == 'html':
-                data = {'car_names': car_names}
+                data = {'cars': cars}
                 return Response(data, template_name='carlist.html')
             else:
-                serializer = CarNameSerializer(car_names, many=True)
+                serializer = CarSerializer(cars, many=True)
                 return Response(serializer.data)
         # 메이커명과 자동차명이 주어졌다면 사양을 리턴
-        elif (mid <> '0' and cnid <> '0' and cid == '0'):
-            maker = Maker.objects.filter(mid=mid).order_by('mid')
-            car_name = CarName.objects.filter(mid=maker, cnid=cnid)
-            cars = Car.objects.filter(cnid=car_name).order_by('cid')
+        elif (mcode <> 'aa' and ccode <> 'ANY'):
+            maker = Maker.objects.filter(mcode=mcode).order_by('mid')
+            cars = Car.objects.filter(mid=maker, ccode=ccode).order_by('cid')
             if request.accepted_renderer.format == 'html':
                 data = {'cars': cars}
                 return Response(data, template_name='carlist.html')

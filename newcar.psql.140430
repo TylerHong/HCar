@@ -1,19 +1,19 @@
 use hcar;
-insert into newcar_maker (mname) values ('현대');
-insert into newcar_maker (mname) values ('기아');
-insert into newcar_maker (mname) values ('쉐보레');
-insert into newcar_maker (mname) values ('르노삼성');
-insert into newcar_maker (mname) values ('쌍용');
-insert into newcar_maker (mname) values ('벤츠');
-insert into newcar_maker (mname) values ('BMW');
-insert into newcar_maker (mname) values ('아우디');
-insert into newcar_maker (mname) values ('폭스바겐');
-insert into newcar_maker (mname) values ('미니');
-insert into newcar_maker (mname) values ('토요타');
-insert into newcar_maker (mname) values ('혼다');
-insert into newcar_maker (mname) values ('닛산');
-insert into newcar_maker (mname) values ('렉서스');
-insert into newcar_maker (mname) values ('포드');
+insert into newcar_maker (mcode, mname) values ('HD', '현대');
+insert into newcar_maker (mcode, mname) values ('KA', '기아');
+insert into newcar_maker (mcode, mname) values ('SV', '쉐보레');
+insert into newcar_maker (mcode, mname) values ('RS', '르노삼성');
+insert into newcar_maker (mcode, mname) values ('SY', '쌍용');
+insert into newcar_maker (mcode, mname) values ('BZ', '벤츠');
+insert into newcar_maker (mcode, mname) values ('BM', 'BMW');
+insert into newcar_maker (mcode, mname) values ('AD', '아우디');
+insert into newcar_maker (mcode, mname) values ('VW', '폭스바겐');
+insert into newcar_maker (mcode, mname) values ('MN', '미니');
+insert into newcar_maker (mcode, mname) values ('TT', '토요타');
+insert into newcar_maker (mcode, mname) values ('HO', '혼다');
+insert into newcar_maker (mcode, mname) values ('NS', '닛산');
+insert into newcar_maker (mcode, mname) values ('LS', '렉서스');
+insert into newcar_maker (mcode, mname) values ('FD', '포드');
 
 insert into newcar_car (mid_id, cname, ccode, trim) values 
   (1, '쏘나타YF', 'YF2014', 'CVVL Style 수동');

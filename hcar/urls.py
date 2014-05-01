@@ -12,8 +12,8 @@ urlpatterns = patterns('',
 
     # 이하 자동차 목록 요청 URL
     url(u'^hcar/carlist/?$', views.CarList.as_view()),
-    url(u'^hcar/carlist/(?P<mcode>[a-zA-Z]+)/?$', views.CarList.as_view()),
-    url(u'^hcar/carlist/(?P<mcode>[a-zA-Z]+)/(?P<ccode>[a-zA-Z0-9]+)/?$', views.CarList.as_view()),
+    url(u'^hcar/carlist/(?P<mid>[0-9]+)/?$', views.CarList.as_view()),
+    url(u'^hcar/carlist/(?P<mid>[0-9]+)/(?P<ccode>[a-zA-Z0-9]+)/?$', views.CarList.as_view()),
 
     # 이하 구매등록 URL
     url(u'^hcar/buyrequest/?$', views.BuyRequest.as_view()),
