@@ -1,19 +1,15 @@
 <html>
 	<head>
-		<title>장고 북마크 - 사용자 로그인</title>
+		<title>Login</title>
 	</head>
 	<body>
-		<h1>사용자 로그인</h1>
-		{% if form.has_errors %}
-			<p>사용자 이름과 비밀번호가 일치하지 않습니다. 다시 시도해보세요.</p>
-		{% endif %}
-		<form method="post" action=".">
-			<p><label for="id_username">사용자 이름:</label>
-				{{ form.username }} </p>
-			<p><label for="id_password">비밀번호:</label>
-				{{ form.password }}</p>
+		<h1>Login</h1>
+		<form id="login_form" method="post" action="/hcar/login/">
+			{% csrf_token %}
+			Username : <input type = "text" name="username" value="" size="50"/><br />
+			Password : <input type = "password" name="password" value="" size="50"/><br />
 			<input type="hidden" name="next" value="/" />
-			<input type="submit" value="로그인" />
+			<input type="submit" value="Login" />
 		</form>
 	</body>
 </html>

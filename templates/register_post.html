@@ -1,13 +1,14 @@
 <html>
 	<head>
-		<title>딜러 등록</title>
+		<title>Register D</title>
 	</head>
 	<body>
-<h1>딜러 등록</h1>
+<h1>Register D</h1>
 <form method="post" action="./register">
 {% csrf_token %}
-{{ form.as_p }}
-<input type="submit" value="등록" />
+{{ user_form.as_p }}
+{{ dealer_form.as_p }}
+<input type="submit" value="Submit" />
 </form>
 </body>
 </html>

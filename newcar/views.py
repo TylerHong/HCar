@@ -5,8 +5,11 @@ from rest_framework.response import Response
 from django.template.loader import render_to_string
 from django.core.mail import send_mail
 from django.http import HttpResponse
+from django.contrib.auth import authenticate, login, logout
 
-from newcar.models import Maker, CarName, Car, Buy, BuyForm, Dealer, DealerForm
+from django.contrib.auth.models import User
+from newcar.models import Maker, CarName, Car, Buy, Dealer
+from newcar.forms import BuyForm, UserForm, DealerForm
 from newcar.serializers import MakerSerializer, CarSerializer, BuyRequestSerializer, BuyListFreeSerializer
 import pdb;
 
@@ -132,50 +135,21 @@ class ConfirmBuy(APIView):
         return Response(data, status = respStatus, template_name='confirm.html')
 
 
-# 구매요청 검색 뷰 for anyone
-class BuyListFree(APIView):
-    def get(self, request, mid, cid, city='ANY', format=None):
-#        pdb.set_trace()
-
-        mid = int(mid)
-        cid = int(cid)
-        if (mid <= 0):
-            data = {'msg':'invalid mid', 'errcode':'202'}
-            return Response(data, status = status.HTTP_400_BAD_REQUEST)
-        elif (cid < 0):
-            data = {'msg':'invalid cid', 'errcode':'203'}
-            return Response(data, status = status.HTTP_400_BAD_REQUEST)
-
-        if (cid == 0):
-            buyreqs = Buy.objects.filter(mid=mid).filter(is_confirmed=True)
-        else:
-            buyreqs = Buy.objects.filter(mid=mid).filter(cid=cid).filter(is_confirmed=True)
-        if (buyreqs.count() > 0 and city <> 'ANY'):
-            buyreqs = buyreqs.filter(city__contains=city)
-
-        if (buyreqs.count() == 0):
-            data = {'msg':'no data', 'errcode':'201'}
-            return Response(data, status = status.HTTP_400_BAD_REQUEST)
-        elif (buyreqs.count() == 1):
-            serializer = BuyListFreeSerializer(buyreqs)
-            return Response(serializer.data)
-        else:
-            serializer = BuyListFreeSerializer(buyreqs, many=True)
-            return Response(serializer.data)
 
 
 # 딜러 회원가입 뷰
 class Register(APIView):
-    def send_email(self, did, to):
+    def send_email(self, id, to):
         subject = 'Confirm message from hcar'
         text_content = 'This is important message.'
-        html_content = render_to_string('html_dealer_confirm.html', {'id': did})
+        html_content = render_to_string('html_dealer_confirm.html', {'id': id})
         send_mail(subject, html_content, 'kshong@coche.dnip.net', [to])
 
     def get(self, request, format=None):
         if request.accepted_renderer.format == 'html':
-            form = DealerForm()
-            data = {'form': form}
+            user_form = UserForm()
+            dealer_form = DealerForm()
+            data = {'user_form': user_form, 'dealer_form': dealer_form}
             return Response(data, template_name='register_post.html')
         else:
             data = "GET not allowed"
@@ -186,58 +160,64 @@ class Register(APIView):
         pdb.set_trace()
         # html 접근일 경우
         if request.accepted_renderer.format == 'html':
-            form = DealerForm(request.POST)
+            is_registered = False
+            user_form = UserForm(request.POST)
+            dealer_form = DealerForm(request.POST)
             # form 확인
-            if not form.is_valid():
-                data = {'msg':'invalid form', 'errcode':'103'}
-                respStatus = status.HTTP_400_BAD_REQUEST
-                return Response(data, status = respStatus, template_name='register_result.html')
-            # 동일 이메일로 등록된 딜러가 있는지 확인
-            oldDealers = Dealer.objects.filter(email=form.cleaned_data['email'])
-            if (oldDealers.count() > 0):
-                data = {'msg':'register failed. same email exists', 'errcode':'101'}
-                respStatus = status.HTTP_409_CONFLICT
-                return Response(data, status = respStatus, template_name='register_result.html')
-            # 저장후 딜러 확인 메일 송신
-            dealer = form.save()
-            self.send_email(dealer.did, dealer.email)
-            data = {'msg':'saved', 'errcode':'000'}
-            respStatus = status.HTTP_201_CREATED
-            return Response(data, status = respStatus, template_name='register_result.html')
+            if user_form.is_valid() and dealer_form.is_valid():
+                # 동일 이메일로 등록된 딜러가 있는지 확인
+                old_users = User.objects.filter(email=user_form.cleaned_data['email'])
+                if (old_users.count() > 0):
+                    msg = 'register failed. same email exists'
+                    resp_code = '101'
+                    resp_status = status.HTTP_409_CONFLICT
+                else:
+                    user = user_form.save(commit=False)
+                    user.is_active = False
+                    user.set_password(user.password)    # 비밀번호 해시
+                    dealer = dealer_form.save(commit=False)
+                    user.save()
+                    dealer.user = user
+                    dealer.save()
+                    # 저장후 딜러 확인 메일 송신
+                    self.send_email(user.id, user.email)
+                    msg = 'saved'
+                    resp_code = '000'
+                    resp_status = status.HTTP_201_CREATED
+                    is_registered = True
+            # invalid form 일 경우
+            else:
+                msg = 'invalid form'
+                if not user_form.is_valid():
+                    msg += ' - ' + str(user_form.errors)
+                if not dealer_form.is_valid():
+                    msg += ' - ' + str(dealer_form.errors)
+                resp_code = '103'
+                resp_status = status.HTTP_400_BAD_REQUEST
+            data = {'msg':msg, 'resp code':resp_code}
+            return Response(data, status = resp_status, template_name='register_result.html')
+
         # html 이외 접근일경우 (모바일)
         else:
-            serializer = RegisterSerializer(data=request.DATA)
-            if not serializer.is_valid():
-                data = {'msg':'invalid request', 'errcode':'102'}
-                respStatus = status.HTTP_400_BAD_REQUEST
-                return Response(data, status = respStatus)
-            # 동일 이메일로 등록된 딜러가 있는지 확인
-            oldDealers = Dealer.objects.filter(email=serializer.data['email'])
-            if (oldDealers.count() > 0):
-                data = {'msg':'register failed. same email exists', 'errcode':'101'}
-                respStatus = status.HTTP_409_CONFLICT
-                return Response(data, status = respStatus)
-            # 저장후 딜러 확인 메일 송신
-            serializer.save()
-            dealer = Dealer.objects.filter(email=serializer.data['email'])
-            self.send_email(dealer[0].did, dealer[0].email)
-            data = {'msg':'saved', 'errcode':'000'}
-            respStatus = status.HTTP_201_CREATED
             return Response(data, status = respStatus)
 
 # 딜러 검증 뷰
 class ConfirmDealer(APIView):
-    def get(self, request, did, format=None):
+    def get(self, request, id, format=None):
+        pdb.set_trace()
         respStatus = status.HTTP_200_OK
-        if (int(did) <= 0):
+        if (int(id) <= 0):
             data = {'msg':'CONFIRM ERROR'}
         else:
             try:
-                dealer = Dealer.objects.get(did=did)
+                dealer = Dealer.objects.get(user_id=id)
                 if (dealer.is_confirmed == True):
                     data = {'msg':'ALREADY CONFIRMED'}
                 else:
                     dealer.is_confirmed = True
+                    user = dealer.user
+                    user.is_active = True
+                    user.save()
                     dealer.save()
                     data = {'msg':'CONFIRMED'}
             except Dealer.DoesNotExist:
@@ -249,24 +229,105 @@ class ConfirmDealer(APIView):
 class Login(APIView):
     def get(self, request, format=None):
         if request.accepted_renderer.format == 'html':
-            request.session['coche_login_sess'] = 'hannal'
-            return HttpResponse('[%s] logged in successfully' % request.session['coche_login_sess'])
+            if request.user.is_authenticated():
+                msg = 'already logged in by [' + request.user.username + ']'
+                resp_code = '101'
+                resp_status = status.HTTP_400_BAD_REQUEST
+                data = {'msg':msg, 'resp code':resp_code}
+                return Response(data, status = resp_status, template_name='login_result.html')
+            else:
+                return Response(template_name='login.html')
         else:
             return Response(status=status.HTTP_200_OK)
+
+    def post(self, request, format=None):
+        pdb.set_trace()
+        # html 접근일 경우
+        if request.accepted_renderer.format == 'html':
+            username = request.POST['username']
+            password = request.POST['password']
+            user = authenticate(username=username, password=password)
+            if user:
+                dealer = Dealer.objects.get(user_id=user.id)
+                if dealer and user.is_active and dealer.is_confirmed:
+                    login(request, user)
+                    msg = 'login succedd'
+                    resp_code = '000'
+                    resp_status = status.HTTP_200_OK
+                else:
+                    msg = 'inactive user'
+                    resp_code = '101'
+                    resp_status = status.HTTP_400_BAD_REQUEST
+            else:
+                msg = 'invalid user/password'
+                resp_code = '101'
+                resp_status = status.HTTP_400_BAD_REQUEST
+            data = {'msg':msg, 'resp code':resp_code}
+            return Response(data, status = resp_status, template_name='login_result.html')
+
+        # 모바일 접근일경우
+        else:
+            resp_status = status.HTTP_400_BAD_REQUEST
+
 
 # 딜러 로그아웃 뷰
 class Logout(APIView):
     def get(self, request, format=None):
         if request.accepted_renderer.format == 'html':
-            del request.session['coche_login_sess']
-            return HttpResponse('logged out successfully')
+            if request.user.is_authenticated():
+                logout(request)
+                msg = 'Logged out.'
+                resp_code = '000'
+                resp_status = status.HTTP_200_OK
+            else:
+                msg = 'You must login first.'
+                resp_code = '101'
+                resp_status = status.HTTP_400_BAD_REQUEST
+            data = {'msg':msg, 'resp code':resp_code}
+            return Response(data, status = resp_status, template_name='logout_result.html')
         else:
             return Response(status=status.HTTP_200_OK)
 
 
-class Logintest(APIView):
-    def get(self, request, format=None):
+# 구매요청 검색 뷰 for anyone
+class BuyListFree(APIView):
+    def get(self, request, mid, cnid='0', city='ANY', format=None):
+        pdb.set_trace()
+        # HTML 요처일 경우
         if request.accepted_renderer.format == 'html':
-            return HttpResponse('[%s] logged in successfully' % request.session['coche_login_sess'])
+            if (int(mid) <= 0):
+                msg = 'invalid mid'
+                resp_code = '202'
+                resp_status = status.HTTP_400_BAD_REQUEST
+                data = {'msg':msg, 'resp code':resp_code}
+            elif (int(cnid) < 0):
+                msg = 'invalid cid'
+                resp_code = '203'
+                resp_status = status.HTTP_400_BAD_REQUEST
+                data = {'msg':msg, 'resp code':resp_code}
+            else:
+                if (int(cnid) == 0):
+                    buy_list = Buy.objects.filter(cid__cnid__mid_id=mid).filter(is_confirmed=True)
+                else:
+                    buy_list = Buy.objects.filter(cid__cnid__mid_id=mid).filter(cid__cnid_id=cnid).filter(is_confirmed=True)
+                if (buy_list.count() > 0 and city <> 'ANY'):
+                    buy_list = buy_list.filter(city__contains=city)
+                if (buy_list.count() == 0):
+                    msg = 'no data in such condition'
+                    resp_code = '201'
+                    resp_status = status.HTTP_400_BAD_REQUEST
+                    data = {'msg':msg, 'resp code':resp_code}
+                elif (buy_list.count() == 1):
+                    serializer = BuyListFreeSerializer(buy_list)
+                    resp_status = status.HTTP_200_OK
+                    #data = {'buys':serializer.data}
+                    data = {'buys':buy_list}
+                else:
+                    serializer = BuyListFreeSerializer(buy_list, many=True)
+                    resp_status = status.HTTP_200_OK
+                    data = {'buys':serializer.data}
+            return Response(data, status = resp_status, template_name='buylist_result.html')
+            
+        # 모바일 요청일경우
         else:
             return Response(status=status.HTTP_200_OK)

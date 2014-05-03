@@ -30,12 +30,12 @@ class BuyRequestSerializer(serializers.ModelSerializer):
 class BuyListFreeSerializer(serializers.ModelSerializer):
   class Meta:
     model = Buy
-    fields = ('cid', 'is_lease', 'is_new', 'year', 'city', 'addr1', 'req_date')
+    fields = ('cid', 'is_lease', 'is_new', 'city', 'addr', 'req_date')
 
 # 유료로 조회 가능한 구매요청 목록
 class BuyListSerializer(serializers.ModelSerializer):
   class Meta:
     model = Buy
-    fields = ('cid', 'is_lease', 'is_new', 'year', 'nickname', 'detail', 'city',
-              'addr1', 'req_date')
+    fields = ('cid', 'is_lease', 'is_new', 'nickname', 'detail', 'city',
+              'addr', 'req_date')
 
