@@ -1,0 +1,25 @@
+<html>
+<body>
+{% if car_names %}
+    Car names are available.<br><br>
+    <table border=1 cellpadding=5 cellspacing=1>
+    <tr>
+        <td>MID</td>
+        <td>MNAME</td>
+        <td>CNID</td>
+        <td>CNAME</td>
+    </tr>
+    {% for car_name in car_names %}
+    <tr>
+        <td>{{ car_name.mid.mid }}</td>
+        <td>{{ car_name.mid.mname }}</td>
+        <td>{{ car_name.cnid }}</td>
+        <td>{{ car_name.cname }}</td>
+    </tr>
+    {% endfor %}
+    </table>
+{% else %}
+    <p>No Car names are available.</p>
+{% endif %}
+</body>
+</html>

@@ -1,6 +1,6 @@
 #-*- coding: utf-8 -*-
 from rest_framework import serializers
-from newcar.models import Maker, Car, Buy
+from newcar.models import Maker, CarName, Car, Buy
 
 class MakerSerializer(serializers.ModelSerializer):
   class Meta:

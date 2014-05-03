@@ -102,8 +102,11 @@ TEMPLATE_DIRS = ( os.path.join(BASE_DIR, 'templates'), )
 # 메일서버 설정
 #M_EMAIL = 'kshong@coche.dnip.net'
 #SERVER_EMAIL = 'kshong@coche.dnip.net'
-EMAIL_USE_TLS = True
+#EMAIL_USE_TLS = True
 EMAIL_HOST = 'localhost'
 EMAIL_PORT = 25
 EMAIL_HOST_USER = 'kshong'
 EMAIL_HOST_PASSWORD = 'kyh02057'
+
+# 브라우저 종료 시 세션 만료 설정
+SESSION_EXPIRE_AT_BROWSER_CLOSE = True
