@@ -6,17 +6,18 @@ from django.template.loader import render_to_string
 from django.core.mail import send_mail
 from django.http import HttpResponse
 from django.contrib.auth import authenticate, login, logout
-
 from django.contrib.auth.models import User
-from newcar.models import Maker, CarName, Car, Buy, Dealer
+from Crypto.Cipher import AES
+from newcar.models import Maker, Car, Trim, Buy, Dealer
 from newcar.forms import BuyForm, UserForm, DealerForm
-from newcar.serializers import MakerSerializer, CarSerializer, BuyRequestSerializer, BuyListFreeSerializer
+from newcar.serializers import MakerSerializer, CarSerializer, TrimSerializer, BuyRequestSerializer, BuyListFreeSerializer
 import pdb;
 
 
 # 제조사 및 자동차 리스트를 가져오는 REST 뷰
 class CarList(APIView):
-    def get(self, request, mid='0', cnid='0', cid='0', format=None):
+    def get(self, request, mid='0', cid='0', tid='0', format=None):
+#        pdb.set_trace()
         # 아무 조건도 없다면 메이커 명을 리턴
         if (mid == '0'):
             makers = Maker.objects.all().order_by('mid')
@@ -27,25 +28,25 @@ class CarList(APIView):
                 serializer = MakerSerializer(makers, many=True)
                 return Response(serializer.data)
         # 메이커명이 주어졌다면 자동차명을 리턴
-        elif (mid <> '0' and cnid == '0'):
+        elif (mid <> '0' and cid == '0'):
             maker = Maker.objects.filter(mid=mid)
-            car_names = CarName.objects.filter(mid=maker).order_by('cnid')
-            if request.accepted_renderer.format == 'html':
-                data = {'car_names': car_names}
-                return Response(data, template_name='list_carname.html')
-            else:
-                serializer = CarNameSerializer(car_names, many=True)
-                return Response(serializer.data)
-        # 메이커명과 자동차명이 주어졌다면 사양을 리턴
-        elif (mid <> '0' and cnid <> '0' and cid == '0'):
-            maker = Maker.objects.filter(mid=mid).order_by('mid')
-            car_name = CarName.objects.filter(mid=maker, cnid=cnid)
-            cars = Car.objects.filter(cnid=car_name).order_by('cid')
+            cars = Car.objects.filter(mid=maker).order_by('cid')
             if request.accepted_renderer.format == 'html':
                 data = {'cars': cars}
                 return Response(data, template_name='list_car.html')
             else:
                 serializer = CarSerializer(cars, many=True)
+                return Response(serializer.data)
+        # 메이커명과 자동차명이 주어졌다면 사양을 리턴
+        elif (mid <> '0' and cid <> '0' and tid == '0'):
+            maker = Maker.objects.filter(mid=mid).order_by('mid')
+            car = Car.objects.filter(mid=maker, cid=cid)
+            trims = Trim.objects.filter(cid=car).order_by('tid')
+            if request.accepted_renderer.format == 'html':
+                data = {'trims': trims}
+                return Response(data, template_name='list_trim.html')
+            else:
+                serializer = TrimSerializer(trims, many=True)
                 return Response(serializer.data)
 
 # 구매요청 등록 뷰
@@ -54,10 +55,6 @@ class BuyRequest(APIView):
         subject = 'Confirm message from hcar'
         text_content = 'This is important message.'
         html_content = render_to_string('html_buy_confirm.html', {'id': bid})
-#        msg = EmailMultiAlternatives(subject, text_content, 'kisoohong@gmail.com' , [to])
-#        msg.attach_alternative(html_content, "text/html")
-#        pdb.set_trace()
-#        msg.send()
         send_mail(subject, html_content, 'kshong@coche.dnip.net', [to])
 
     def post(self, request, format=None):
@@ -204,7 +201,6 @@ class Register(APIView):
 # 딜러 검증 뷰
 class ConfirmDealer(APIView):
     def get(self, request, id, format=None):
-        pdb.set_trace()
         respStatus = status.HTTP_200_OK
         if (int(id) <= 0):
             data = {'msg':'CONFIRM ERROR'}
@@ -227,6 +223,24 @@ class ConfirmDealer(APIView):
 
 # 딜러 로그인 뷰
 class Login(APIView):
+    def _lazysecret(self, secret, blocksize=32, padding='}'):
+        """pads secret if not legal AES block size (16, 24, 32)"""
+        if not len(secret) in (16, 24, 32):
+            return secret + (blocksize - len(secret)) * padding
+        return secret
+
+    def decrypt(self, ciphertext, secret, lazy=True):
+        """decrypt ciphertext with secret
+        ciphertext  - encrypted content to decrypt
+        secret      - secret to decrypt ciphertext
+        lazy        - pad secret if less than legal blocksize (default: True)
+        returns plaintext
+        """
+        secret = self._lazysecret(secret) if lazy else secret
+        encobj = AES.new(secret, AES.MODE_CFB)
+        plaintext = encobj.decrypt(ciphertext)
+        return plaintext
+
     def get(self, request, format=None):
         if request.accepted_renderer.format == 'html':
             if request.user.is_authenticated():
@@ -267,7 +281,20 @@ class Login(APIView):
 
         # 모바일 접근일경우
         else:
-            resp_status = status.HTTP_400_BAD_REQUEST
+            username = request.DATA['username']
+            rawpass = request.DATA['password']
+            password = self.decrypt(rawpass, 'coche')
+            user = authenticate(username=username, password=password)
+            if user:
+                dealer = Dealer.objects.get(user_id=user.id)
+                if dealer and user.is_active and dealer.is_confirmed:
+                    login(request, user)
+                    resp_status = status.HTTP_200_OK
+                else:
+                    resp_status = status.HTTP_400_BAD_REQUEST
+            else:
+                resp_status = status.HTTP_400_BAD_REQUEST
+            return Response(status = resp_status)
 
 
 # 딜러 로그아웃 뷰
@@ -291,27 +318,27 @@ class Logout(APIView):
 
 # 구매요청 검색 뷰 for anyone
 class BuyListFree(APIView):
-    def get(self, request, mid, cnid='0', city='ANY', format=None):
+    def get(self, request, mid, cid='0', addr1='ANY', format=None):
         pdb.set_trace()
-        # HTML 요처일 경우
+        # HTML 요청일 경우
         if request.accepted_renderer.format == 'html':
             if (int(mid) <= 0):
                 msg = 'invalid mid'
                 resp_code = '202'
                 resp_status = status.HTTP_400_BAD_REQUEST
                 data = {'msg':msg, 'resp code':resp_code}
-            elif (int(cnid) < 0):
+            elif (int(cid) < 0):
                 msg = 'invalid cid'
                 resp_code = '203'
                 resp_status = status.HTTP_400_BAD_REQUEST
                 data = {'msg':msg, 'resp code':resp_code}
             else:
-                if (int(cnid) == 0):
-                    buy_list = Buy.objects.filter(cid__cnid__mid_id=mid).filter(is_confirmed=True)
+                if (int(cid) == 0):
+                    buy_list = Buy.objects.filter(mid_id=mid).filter(is_confirmed=True)
                 else:
-                    buy_list = Buy.objects.filter(cid__cnid__mid_id=mid).filter(cid__cnid_id=cnid).filter(is_confirmed=True)
-                if (buy_list.count() > 0 and city <> 'ANY'):
-                    buy_list = buy_list.filter(city__contains=city)
+                    buy_list = Buy.objects.filter(cid_id=cid).filter(is_confirmed=True)
+                if (buy_list.count() > 0 and addr1 <> 'ANY'):
+                    buy_list = buy_list.filter(addr1__contains=addr1)
                 if (buy_list.count() == 0):
                     msg = 'no data in such condition'
                     resp_code = '201'

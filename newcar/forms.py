@@ -8,8 +8,8 @@ class BuyForm(ModelForm):
     passwd = forms.CharField(widget=forms.PasswordInput())
     class Meta:
         model = Buy
-        fields = ['cid', 'is_lease', 'is_new', 'nickname', 'email', 'passwd',
-                  'cellphone', 'detail', 'city', 'addr', 'zipcode']
+        fields = ['mid', 'cid', 'tid', 'nickname', 'email', 'passwd',
+                  'cellphone', 'detail', 'addr1', 'addr2', 'zipcode']
 
 class UserForm(ModelForm):
     password = forms.CharField(widget=forms.PasswordInput())
@@ -20,5 +20,5 @@ class UserForm(ModelForm):
 class DealerForm(ModelForm):
     class Meta:
         model = Dealer
-        fields = ['mid', 'branch_name', 'memo', 'phone', 'city', 'addr', 'addr2']
+        fields = ['mid', 'branch_name', 'memo', 'phone', 'addr1', 'addr2', 'addr3']
 
