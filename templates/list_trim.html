@@ -1,0 +1,29 @@
+<html>
+<body>
+{% if trims %}
+    Trims are available.<br><br>
+    <table border=1 cellpadding=5 cellspacing=2>
+    <tr>
+        <td>MID</td>
+        <td>MNAME</td>
+        <td>CID</td>
+        <td>CNAME</td>
+        <td>TID</td>
+        <td>TNAME</td>
+    </tr>
+    {% for trim in trims %}
+    <tr>
+        <td>{{ trim.cid.mid.mid }}</td>
+        <td>{{ trim.cid.mid.mname }}</td>
+        <td>{{ trim.cid.cid }}</td>
+        <td>{{ trim.cid.cname }}</td>
+        <td>{{ trim.tid }}</td>
+        <td>{{ trim.tname }}</td>
+    </tr>
+    {% endfor %}
+    </table>
+{% else %}
+    <p>No cars are available.</p>
+{% endif %}
+</body>
+</html>

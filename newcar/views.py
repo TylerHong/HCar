@@ -8,9 +8,10 @@ from django.http import HttpResponse
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 from Crypto.Cipher import AES
-from newcar.models import Maker, Car, Trim, Buy, Dealer
+from newcar.models import Maker, Car, Trim, Nation, Address, Buy, Dealer
 from newcar.forms import BuyForm, UserForm, DealerForm
-from newcar.serializers import MakerSerializer, CarSerializer, TrimSerializer, BuyRequestSerializer, BuyListFreeSerializer
+from newcar.serializers import MakerSerializer, CarSerializer, TrimSerializer, AddressSerializer
+from newcar.serializers import BuyRequestSerializer, BuyListSerializer, NewUserSerializer, NewDealerSerializer
 import pdb;
 
 
@@ -48,6 +49,24 @@ class CarList(APIView):
             else:
                 serializer = TrimSerializer(trims, many=True)
                 return Response(serializer.data)
+
+
+# 주소요청 뷰
+class AddressList(APIView):
+    def get(self, request, nid='0', format=None):
+        pdb.set_trace()
+        if (nid == '0'):
+            return Response(data, template_name='list_address.html')
+        else:
+            nation = Nation.objects.get(nid=nid)
+            address = Address.objects.filter(nid=nation).order_by('aid')
+            if request.accepted_renderer.format == 'html':
+                data = {'addresses': address}
+                return Response(data, template_name='list_address.html')
+            else:
+                serializer = AddressSerializer(address, many=True)
+                return Response(serializer.data)
+
 
 # 구매요청 등록 뷰
 class BuyRequest(APIView):
@@ -196,6 +215,55 @@ class Register(APIView):
 
         # html 이외 접근일경우 (모바일)
         else:
+            user_serializer = NewUserSerializer(data=request.DATA)
+            dealer_serializer = NewDealerSerializer(data=request.DATA)
+#            d2 = NewDealerSerializer(dealer_serializer, data={'user':1},partial=True)
+            if user_serializer.is_valid() and dealer_serializer.is_valid():
+                # 동일 이메일로 완료되지 않은 구매 요청이 있는지 확인
+                old_users = User.objects.filter(email=request.DATA['email'])
+                if (old_users.count() > 0):
+                    resp_status = status.HTTP_409_CONFLICT
+                else:
+                    try:
+                        user = user_serializer.save()
+                        user.is_active = False
+                        user.set_password(user.password)
+                        user.save()
+                        #d2 = NewDealerSerializer2(data=dealer_serializer.data)
+                        dealer = dealer_serializer.save()
+                        dealer.user = user
+                        dealer.save()
+                        #dealer = d2.save()
+                    except StandardError:
+                        if not user == None:
+                            User.objects.filter(id = user.id).delete()
+                        resp_status = status.HTTP_400_BAD_REQUEST
+		    else:
+                        # 저장후 딜러 확인 메일 송신
+                        self.send_email(user.id, user.email)
+                        resp_status = status.HTTP_201_CREATED
+            else:
+                resp_status = status.HTTP_400_BAD_REQUEST
+
+            return Response(status = resp_status)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
             return Response(data, status = respStatus)
 
 # 딜러 검증 뷰
@@ -282,8 +350,9 @@ class Login(APIView):
         # 모바일 접근일경우
         else:
             username = request.DATA['username']
-            rawpass = request.DATA['password']
-            password = self.decrypt(rawpass, 'coche')
+#            rawpass = request.DATA['password']
+#            password = self.decrypt(rawpass, '12345678901234567890123456789012')
+            password = request.DATA['password']
             user = authenticate(username=username, password=password)
             if user:
                 dealer = Dealer.objects.get(user_id=user.id)

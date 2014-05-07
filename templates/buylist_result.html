@@ -1,31 +1,29 @@
 <html>
 <body>
 {% if buys %}
-    Buys are available.<br><br>
-    <table border=1 cellpadding=5 cellspacing=2>
-    <tr>
-        <td>CAR</td>
-        <td>LEASE</td>
-        <td>NEW</td>
-        <td>CITY</td>
-        <td>ADDR</td>
-        <td>REQ DATE</td>
-    </tr>
-    {% for buy in buys %}
-    <tr>
-        <td><a href=''>{{ buy.cid.cnid.mid.mname }}&nbsp;
-        {{ buy.cid.cnid.cname }}&nbsp;
-        {{ buy.cid.trim }}&nbsp;</a></td>
-        <td>{{ buy.is_lease }}</td>
-        <td>{{ buy.is_new }}</td>
-        <td>{{ buy.city }}</td>
-        <td>{{ buy.addr }}</td>
-        <td>{{ buy.req_date.date }}</td>
-    </tr>
-    {% endfor %}
-    </table>
+  Buy requests are available.<br><br>
+  <table border=1 cellpadding=5 cellspacing=2>
+  <tr>
+    <td>CAR</td>
+    <td>LEASE</td>
+    <td>NEW</td>
+    <td>CITY</td>
+    <td>ADDR</td>
+    <td>REQ DATE</td>
+  </tr>
+  {% for buy in buys %}
+  <tr>
+    <td><a href=''>{{ buy.mid.mname }}&nbsp;{{ buy.cid.cname }}&nbsp;{{ buy.tid.tname }}&nbsp;</a></td>
+    <td>{{ buy.is_lease }}</td>
+    <td>{{ buy.is_new }}</td>
+    <td>{{ buy.city }}</td>
+    <td>{{ buy.addr }}</td>
+    <td>{{ buy.req_date.date }}</td>
+  </tr>
+  {% endfor %}
+  </table>
 {% else %}
-    <p>No buys are available.</p>
+  <p>No buy requests are available.</p>
 {% endif %}
 </body>
 </html>

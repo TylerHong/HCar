@@ -1,0 +1,21 @@
+<html>
+<body>
+{% if addresses %}
+    Addresses are available.<br><br>
+    <table border=1 cellpadding=5 cellspacing=1>
+    <tr>
+        <td>ADDR1</td>
+        <td>ADDR2</td>
+    </tr>
+    {% for address in addresses %}
+    <tr>
+        <td>{{ address.addr1 }}</td>
+        <td>{{ address.addr2 }}</td>
+    </tr>
+    {% endfor %}
+    </table>
+{% else %}
+    <p>No addresses are available.</p>
+{% endif %}
+</body>
+</html>

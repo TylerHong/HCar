@@ -13,8 +13,11 @@ urlpatterns = patterns('',
     # 이하 자동차 목록 요청 URL
     url(u'^hcar/carlist/?$', views.CarList.as_view()),
     url(u'^hcar/carlist/(?P<mid>[0-9]+)/?$', views.CarList.as_view()),
-    url(u'^hcar/carlist/(?P<mid>[0-9]+)/(?P<cnid>[0-9]+)/?$', views.CarList.as_view()),
-    url(u'^hcar/carlist/(?P<mid>[0-9]+)/(?P<cnid>[0-9]+)/(?P<cid>[0-9]+)/?$', views.CarList.as_view()),
+    url(u'^hcar/carlist/(?P<mid>[0-9]+)/(?P<cid>[0-9]+)/?$', views.CarList.as_view()),
+    url(u'^hcar/carlist/(?P<mid>[0-9]+)/(?P<cid>[0-9]+)/(?P<tid>[0-9]+)/?$', views.CarList.as_view()),
+
+    # 이하 주소 요청 URL
+    url(u'^hcar/address/(?P<nid>[0-9]+)/?$', views.AddressList.as_view()),
 
     # 이하 구매등록 URL
     url(u'^hcar/buyrequest/?$', views.BuyRequest.as_view()),
@@ -31,8 +34,8 @@ urlpatterns = patterns('',
 
     # 구매 요청 리스트 URL for anyone
     url(u'^hcar/buylist/(?P<mid>[0-9]+)/?$', views.BuyListFree.as_view()),
-    url(u'^hcar/buylist/(?P<mid>[0-9]+)/(?P<cnid>[0-9]+)/?$', views.BuyListFree.as_view()),
-    url(u'^hcar/buylist/(?P<mid>[0-9]+)/(?P<cnid>[0-9]+)/(?P<city>[a-zA-Z가-힣]+)/?$', views.BuyListFree.as_view()),
+    url(u'^hcar/buylist/(?P<mid>[0-9]+)/(?P<cid>[0-9]+)/?$', views.BuyListFree.as_view()),
+    url(u'^hcar/buylist/(?P<mid>[0-9]+)/(?P<cid>[0-9]+)/(?P<addr1>[0-9a-zA-Z가-힣]+)/?$', views.BuyListFree.as_view()),
     
 )
 

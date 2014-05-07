@@ -20,5 +20,5 @@ class UserForm(ModelForm):
 class DealerForm(ModelForm):
     class Meta:
         model = Dealer
-        fields = ['mid', 'branch_name', 'memo', 'phone', 'addr1', 'addr2', 'addr3']
+        fields = ['mid', 'branch', 'intro', 'phone', 'addr1', 'addr2', 'addr3']
 

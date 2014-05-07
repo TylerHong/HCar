@@ -1,4 +1,7 @@
 <html>
+<head>
+Buy request result
+</head>
 <body>
 {% if cars %}
     Cars are available.<br><br>
@@ -6,10 +9,10 @@
     <tr>
         <td>MID</td>
         <td>MNAME</td>
-        <td>CNID</td>
-        <td>CNAME</td>
         <td>CID</td>
-        <td>TRIM</td>
+        <td>CNAME</td>
+        <td>TID</td>
+        <td>TNAME</td>
     </tr>
     {% for car in cars %}
     <tr>
@@ -18,7 +21,7 @@
         <td>{{ car.cnid.cnid }}</td>
         <td>{{ car.cnid.cname }}</td>
         <td>{{ car.cid }}</td>
-        <td>{{ car.trim }}</td>
+        <td>{{ car.cname }}</td>
     </tr>
     {% endfor %}
     </table>

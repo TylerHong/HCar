@@ -4,14 +4,15 @@ from django.contrib.auth.models import User
 
 
 class Nation(models.Model):
-    nid = models.AutoField(primary_key=True)
+    nid = models.PositiveIntegerField(primary_key=True)
     nname = models.CharField(max_length=50)
     nename = models.CharField(max_length=50, unique=True)
 
-class Addr1(models.Model):
+class Address(models.Model):
+    aid = models.AutoField(primary_key=True)
     nid = models.ForeignKey(Nation)
-    a1id = models.AutoField(primary_key=True)
-    name = models.CharField(max_length=220)
+    addr1 = models.CharField(max_length=30)
+    addr2 = models.CharField(max_length=30)
 
 class Maker(models.Model):
     mid = models.AutoField(primary_key=True)
@@ -36,8 +37,8 @@ class Trim(models.Model):
 class Dealer(models.Model):
     user = models.OneToOneField(User)
     mid = models.ForeignKey(Maker)
-    branch_name = models.CharField(max_length=20)    # 지점명
-    memo = models.TextField(null=True)               # 자기소개
+    branch = models.CharField(max_length=20)    # 지점명
+    intro = models.TextField(null=True)               # 자기소개
     phone = models.CharField(max_length=12, null=True)
     addr1 = models.CharField(max_length=20)
     addr2 = models.CharField(max_length=30)
@@ -76,3 +77,9 @@ class Buy(models.Model):
     def __unicode__(self):
         return str(self.bid)+' '+str(self.mid)+' '+str(self.cid)+' '+self.nickname
 
+# 딜러의 구매요청 조회 기록
+class DealerInquiryLog(models.Model):
+    id = models.AutoField(primary_key=True)
+    did = models.ForeignKey(User, db_index=True)
+    bid = models.ForeignKey(Buy)
+    inquiry_date = models.DateField()

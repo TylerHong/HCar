@@ -1,4 +1,6 @@
-use hcar;
+insert into newcar_nation (nname, nename) values ('한국', 'South Korea')
+insert into newcar_nation (nname, nename) values ('USA', 'USA')
+
 insert into newcar_maker (mname) values ('현대');
 insert into newcar_maker (mname) values ('기아');
 insert into newcar_maker (mname) values ('쉐보레');
@@ -15,28 +17,28 @@ insert into newcar_maker (mname) values ('닛산');
 insert into newcar_maker (mname) values ('렉서스');
 insert into newcar_maker (mname) values ('포드');
 
-insert into newcar_carname (mid_id, cname) values (1, 'YF쏘나타 2014');
-insert into newcar_carname (mid_id, cname) values (2, 'K5 2014');
-insert into newcar_carname (mid_id, cname) values (2, 'K3 2014');
-insert into newcar_carname (mid_id, cname) values (6, 'C클래스 2014');
-insert into newcar_carname (mid_id, cname) values (7, '1시리즈 2014');
-insert into newcar_carname (mid_id, cname) values (7, '3시리즈 2014');
+insert into newcar_car (mid_id, cname) values (1, 'YF쏘나타 2014');
+insert into newcar_car (mid_id, cname) values (2, 'K5 2014');
+insert into newcar_car (mid_id, cname) values (2, 'K3 2014');
+insert into newcar_car (mid_id, cname) values (6, 'C클래스 2014');
+insert into newcar_car (mid_id, cname) values (7, '1시리즈 2014');
+insert into newcar_car (mid_id, cname) values (7, '3시리즈 2014');
 
-insert into newcar_car (cnid_id, trim) values (1, 'CVVL Style 수동');
-insert into newcar_car (cnid_id, trim) values (1, 'CVVL Style 자동');
-insert into newcar_car (cnid_id, trim) values (2, '디럭스 수동');
-insert into newcar_car (cnid_id, trim) values (2, '디럭스 자동');
-insert into newcar_car (cnid_id, trim) values (3, '1.6 디젤 럭셔리');
-insert into newcar_car (cnid_id, trim) values (3, '1.6 가솔린 해치백');
-insert into newcar_car (cnid_id, trim) values (4, 'C200');
-insert into newcar_car (cnid_id, trim) values (4, 'C200 아방가르드');
-insert into newcar_car (cnid_id, trim) values (4, 'C220 CDI');
-insert into newcar_car (cnid_id, trim) values (5, '118D Urban Line');
-insert into newcar_car (cnid_id, trim) values (5, '118D Urban Line Pack1');
-insert into newcar_car (cnid_id, trim) values (5, '118D Urban Line Pack2');
-insert into newcar_car (cnid_id, trim) values (5, '118D Urban Line M Edition');
-insert into newcar_car (cnid_id, trim) values (5, '120D Sports Line');
-insert into newcar_car (cnid_id, trim) values (6, '320D ED');
-insert into newcar_car (cnid_id, trim) values (6, '320D Navi');
-insert into newcar_car (cnid_id, trim) values (6, '320D 모던');
+insert into newcar_trim (cid_id, tname) values (1, 'CVVL Style 수동');
+insert into newcar_trim (cid_id, tname) values (1, 'CVVL Style 자동');
+insert into newcar_trim (cid_id, tname) values (2, '디럭스 수동');
+insert into newcar_trim (cid_id, tname) values (2, '디럭스 자동');
+insert into newcar_trim (cid_id, tname) values (3, '1.6 디젤 럭셔리');
+insert into newcar_trim (cid_id, tname) values (3, '1.6 가솔린 해치백');
+insert into newcar_trim (cid_id, tname) values (4, 'C200');
+insert into newcar_trim (cid_id, tname) values (4, 'C200 아방가르드');
+insert into newcar_trim (cid_id, tname) values (4, 'C220 CDI');
+insert into newcar_trim (cid_id, tname) values (5, '118D Urban Line');
+insert into newcar_trim (cid_id, tname) values (5, '118D Urban Line Pack1');
+insert into newcar_trim (cid_id, tname) values (5, '118D Urban Line Pack2');
+insert into newcar_trim (cid_id, tname) values (5, '118D Urban Line M Edition');
+insert into newcar_trim (cid_id, tname) values (5, '120D Sports Line');
+insert into newcar_trim (cid_id, tname) values (6, '320D ED');
+insert into newcar_trim (cid_id, tname) values (6, '320D Navi');
+insert into newcar_trim (cid_id, tname) values (6, '320D 모던');
 
