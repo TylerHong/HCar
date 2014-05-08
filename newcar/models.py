@@ -4,39 +4,39 @@ from django.contrib.auth.models import User
 
 
 class Nation(models.Model):
-    nid = models.PositiveIntegerField(primary_key=True)
-    nname = models.CharField(max_length=50)
-    nename = models.CharField(max_length=50, unique=True)
+    id = models.PositiveIntegerField(primary_key=True)
+    name = models.CharField(max_length=50)
+    ename = models.CharField(max_length=50, unique=True)
 
 class Address(models.Model):
-    aid = models.AutoField(primary_key=True)
-    nid = models.ForeignKey(Nation)
+    id = models.AutoField(primary_key=True)
+    nation = models.ForeignKey(Nation)
     addr1 = models.CharField(max_length=30)
     addr2 = models.CharField(max_length=30)
 
 class Maker(models.Model):
-    mid = models.AutoField(primary_key=True)
-    mname = models.CharField(max_length=50, unique=True)
+    id = models.AutoField(primary_key=True)
+    name = models.CharField(max_length=50, unique=True)
     def __unicode__(self):
-        return self.mname
+        return self.name
 
 class Car(models.Model):
-    cid = models.AutoField(primary_key=True)
-    mid = models.ForeignKey(Maker)
-    cname = models.CharField(max_length=50, unique=True)
+    id = models.AutoField(primary_key=True)
+    maker = models.ForeignKey(Maker)
+    name = models.CharField(max_length=50, unique=True)
     def __unicode__(self):
-        return self.cname
+        return self.name
 
 class Trim(models.Model):
-    tid = models.AutoField(primary_key=True)
-    cid = models.ForeignKey(Car)
-    tname = models.CharField(max_length=50)
+    id = models.AutoField(primary_key=True)
+    car = models.ForeignKey(Car)
+    name = models.CharField(max_length=50)
     def __unicode__(self):
-        return self.tname
+        return self.name
 
 class Dealer(models.Model):
     user = models.OneToOneField(User)
-    mid = models.ForeignKey(Maker)
+    maker = models.ForeignKey(Maker)
     branch = models.CharField(max_length=20)    # 지점명
     intro = models.TextField(null=True)         # 자기소개
     phone = models.CharField(max_length=12, null=True)
@@ -53,33 +53,34 @@ class Dealer(models.Model):
         return self.user.username
 
 class Buy(models.Model):
-    bid = models.AutoField(primary_key=True)
-    mid = models.ForeignKey(Maker)
-    cid = models.ForeignKey(Car)
-    tid = models.ForeignKey(Trim)
+    id = models.AutoField(primary_key=True)
+    maker = models.ForeignKey(Maker)
+    car = models.ForeignKey(Car)
+    trim = models.ForeignKey(Trim)
     is_lease = models.BooleanField(default=False)
     is_new = models.BooleanField(default=True)
-    nickname = models.CharField(max_length=20)
+    name = models.CharField(max_length=20)
     email = models.EmailField(max_length=50, null=False)
     passwd = models.CharField(max_length=25)
     cellphone = models.CharField(max_length=15)
-    detail = models.CharField(max_length=100, null=True)
+    detail = models.CharField(max_length=100, null=True, help_text='Color, Option, etc.')
     addr1 = models.CharField(max_length=20)
     addr2 = models.CharField(max_length=30)
-    zipcode = models.CharField(max_length=10, null=True)
+    zipcode = models.CharField(max_length=10, blank=True)
     req_date = models.DateTimeField(auto_now_add=True, editable=False)
     is_confirmed = models.BooleanField(default=False)
     is_done = models.BooleanField(default=False)
     is_cancel = models.BooleanField(default=False)
     done_date = models.DateTimeField(null=True)   # 취소 또는 완료된 날짜
-    did = models.ForeignKey(Dealer, null=True)    # 완료된 경우 성사된 딜러
+    dealer = models.ForeignKey(Dealer, null=True)    # 완료된 경우 성사된 딜러
+    dealer_email = models.EmailField(max_length=50, null=True)  # 성사된 딜러 메일
     satisfaction = models.PositiveIntegerField(default=3)
     def __unicode__(self):
-        return str(self.bid)+' '+str(self.mid)+' '+str(self.cid)+' '+self.nickname
+        return self.email
 
 # 딜러의 구매요청 조회 기록
 class DealerInquiryLog(models.Model):
     id = models.AutoField(primary_key=True)
-    did = models.ForeignKey(User, db_index=True)
-    bid = models.ForeignKey(Buy)
+    dealer = models.ForeignKey(User, db_index=True)
+    buy = models.ForeignKey(Buy)
     inquiry_date = models.DateField()

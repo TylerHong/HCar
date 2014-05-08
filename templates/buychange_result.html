@@ -1,0 +1,23 @@
+<html>
+<head>
+Buy request result
+</head>
+<body>
+{% if buy %}
+    changed<br><br>
+    <table border=1 cellpadding=5 cellspacing=2>
+    <tr>
+        <td>BID</td>
+        <td>EMAIL</td>
+    </tr>
+    <tr>
+        <td>{{ buy.bid }}</td>
+        <td>{{ buy.email }}</td>
+    </tr>
+    </table>
+{% else %}
+    <p>{{msg}}</p>
+    <p>{{errcode}}</p>
+{% endif %}
+</body>
+</html>

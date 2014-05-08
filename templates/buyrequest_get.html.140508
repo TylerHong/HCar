@@ -1,0 +1,26 @@
+<html>
+  <head>
+    <title>Register B</title>
+  </head>
+  <body>
+<p>Register B</p>
+<form method="post" action="./buyrequest">
+{% csrf_token %}
+{{ form.mid }}
+<div id="cid"></div>
+<div id="tid"></div>
+
+<input type="submit" value="Submit" disabled="yes"/>
+</form>
+<script>
+$("#id_mid").change(function() {
+    var selcted_mid = $(this).val();
+    $.getJSON("{% url list_cities %}", { province: province }, function(cities) {
+        var cities_select = $("#cities");
+        … put the `cities` list into the `cities_select` …
+    });
+});
+</script>
+</body>
+</html>
+

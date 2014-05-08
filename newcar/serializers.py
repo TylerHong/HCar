@@ -6,17 +6,17 @@ from newcar.models import Maker, Car, Trim, Buy, Dealer, Address
 class MakerSerializer(serializers.ModelSerializer):
   class Meta:
     model = Maker
-    fields = ('mid', 'mname')
+    fields = ('id', 'name')
 
 class CarSerializer(serializers.ModelSerializer):
   class Meta:
     model = Car
-    fields = ('cid', 'mid', 'cname')
+    fields = ('id', 'maker', 'name')
 
 class TrimSerializer(serializers.ModelSerializer):
   class Meta:
     model = Trim
-    fields = ('tid', 'cid', 'tname')
+    fields = ('id', 'car', 'name')
 
 class AddressSerializer(serializers.ModelSerializer):
   class Meta:
@@ -27,20 +27,31 @@ class AddressSerializer(serializers.ModelSerializer):
 class BuyRequestSerializer(serializers.ModelSerializer):
   class Meta:
     model = Buy
-    fields = ('mid', 'cid', 'tid', 'is_lease', 'is_new', 'nickname',
+    fields = ('maker', 'car', 'trim', 'is_lease', 'is_new', 'name',
               'email', 'passwd', 'cellphone', 'detail', 'addr1', 'addr2', 'zipcode')
+
+class VerifyBuySerializer(serializers.ModelSerializer):
+  class Meta:
+    model = Buy
+    fields = ('email', 'passwd')
+
+class ChangeBuySerializer(serializers.ModelSerializer):
+  class Meta:
+    model = Buy
+    fields = ('maker', 'car', 'trim', 'is_lease', 'is_new', 'name',
+              'email', 'passwd', 'cellphone', 'detail', 'addr1', 'addr2', 'zipcode', 'is_cancel')
 
 # 무료로 조회 가능한 구매요청 목록
 class BuyListFreeSerializer(serializers.ModelSerializer):
   class Meta:
     model = Buy
-    fields = ('mid', 'cid', 'tid', 'is_lease', 'is_new', 'addr1', 'addr2', 'req_date')
+    fields = ('maker', 'car', 'trim', 'is_lease', 'is_new', 'addr1', 'addr2', 'req_date')
 
 # 유료로 조회 가능한 구매요청 목록
 class BuyListSerializer(serializers.ModelSerializer):
   class Meta:
     model = Buy
-    fields = ('mid', 'cid', 'tid', 'is_lease', 'is_new', 'nickname', 'detail', 'addr1',
+    fields = ('maker', 'car', 'trim', 'is_lease', 'is_new', 'name', 'detail', 'addr1',
               'addr2', 'req_date')
 
 class LoginSerializer(serializers.ModelSerializer):
@@ -56,5 +67,5 @@ class NewUserSerializer(serializers.ModelSerializer):
 class NewDealerSerializer(serializers.ModelSerializer):
   class Meta:
     model = Dealer
-    fields = ('user', 'mid', 'branch', 'intro', 'phone', 'addr1', 'addr2', 'addr3')
+    fields = ('user', 'maker', 'branch', 'intro', 'phone', 'addr1', 'addr2', 'addr3')
 

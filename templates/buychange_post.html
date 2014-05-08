@@ -1,24 +1,10 @@
 <html>
 <body>
-{% if buy %}
-  <table border=1 cellpadding=5 cellspacing=2>
-  <tr>
-    <td>car</td>
-    <td>lease</td>
-    <td>new</td>
-    <td>addr1</td>
-    <td>addr2</td>
-    <td>req_date</td>
-  </tr>
-  <tr>
-    <td><a href=''>{{ buy.mid.mname }}&nbsp;{{ buy.cid.cname }}&nbsp;{{ buy.tid.tname }}&nbsp;</a></td>
-    <td>{{ buy.is_lease }}</td>
-    <td>{{ buy.is_new }}</td>
-    <td>{{ buy.addr1 }}</td>
-    <td>{{ buy.addr2 }}</td>
-    <td>{{ buy.req_date.date }}</td>
-  </tr>
-  </table>
+{% if form %}
+  <form method="post" action="./buychange">
+  {% csrf_token %}
+  {{ form.as_p }}
+  <input type="submit" value="Submit" />
 {% else %}
   <p>No buy in such condition</p>
   {{msg}}<br>

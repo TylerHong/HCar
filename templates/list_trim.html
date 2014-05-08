@@ -13,12 +13,12 @@
     </tr>
     {% for trim in trims %}
     <tr>
-        <td>{{ trim.cid.mid.mid }}</td>
-        <td>{{ trim.cid.mid.mname }}</td>
-        <td>{{ trim.cid.cid }}</td>
-        <td>{{ trim.cid.cname }}</td>
-        <td>{{ trim.tid }}</td>
-        <td>{{ trim.tname }}</td>
+        <td>{{ trim.car.maker.id }}</td>
+        <td>{{ trim.car.maker.name }}</td>
+        <td>{{ trim.car.id }}</td>
+        <td>{{ trim.car.name }}</td>
+        <td>{{ trim.id }}</td>
+        <td>{{ trim.name }}</td>
     </tr>
     {% endfor %}
     </table>

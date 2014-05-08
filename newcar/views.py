@@ -9,9 +9,10 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 from Crypto.Cipher import AES
 from newcar.models import Maker, Car, Trim, Nation, Address, Buy, Dealer
-from newcar.forms import NewBuyForm, ChangeBuyForm, UserForm, DealerForm
+from newcar.forms import NewBuyForm, VerifyBuyForm, ChangeBuyForm, UserForm, DealerForm
 from newcar.serializers import MakerSerializer, CarSerializer, TrimSerializer, AddressSerializer
-from newcar.serializers import BuyRequestSerializer, BuyListSerializer, NewUserSerializer, NewDealerSerializer
+from newcar.serializers import BuyRequestSerializer, VerifyBuySerializer, ChangeBuySerializer
+from newcar.serializers import BuyListFreeSerializer, NewUserSerializer, NewDealerSerializer
 import pdb;
 
 class Index(APIView):
@@ -24,7 +25,7 @@ class CarList(APIView):
 #    pdb.set_trace()
     # 아무 조건도 없다면 메이커 명을 리턴
     if (mid == '0'):
-      makers = Maker.objects.all().order_by('mid')
+      makers = Maker.objects.all().order_by('id')
       if request.accepted_renderer.format == 'html':
         data = {'makers': makers}
         return Response(data, template_name='list_maker.html')
@@ -33,8 +34,8 @@ class CarList(APIView):
         return Response(serializer.data)
     # 메이커명이 주어졌다면 자동차명을 리턴
     elif (mid <> '0' and cid == '0'):
-      maker = Maker.objects.filter(mid=mid)
-      cars = Car.objects.filter(mid=maker).order_by('cid')
+      maker = Maker.objects.filter(id=mid)
+      cars = Car.objects.filter(maker=maker).order_by('id')
       if request.accepted_renderer.format == 'html':
         data = {'cars': cars}
         return Response(data, template_name='list_car.html')
@@ -43,9 +44,9 @@ class CarList(APIView):
         return Response(serializer.data)
     # 메이커명과 자동차명이 주어졌다면 사양을 리턴
     elif (mid <> '0' and cid <> '0' and tid == '0'):
-      maker = Maker.objects.filter(mid=mid).order_by('mid')
-      car = Car.objects.filter(mid=maker, cid=cid)
-      trims = Trim.objects.filter(cid=car).order_by('tid')
+      maker = Maker.objects.filter(id=mid).order_by('id')
+      car = Car.objects.filter(maker=maker, id=cid)
+      trims = Trim.objects.filter(car=car).order_by('id')
       if request.accepted_renderer.format == 'html':
         data = {'trims': trims}
         return Response(data, template_name='list_trim.html')
@@ -57,7 +58,7 @@ class CarList(APIView):
 # 주소요청 뷰
 class AddressList(APIView):
   def get(self, request, nid='0', format=None):
-    pdb.set_trace()
+#    pdb.set_trace()
     if (nid == '0'):
       return Response(data, template_name='list_address.html')
     else:
@@ -80,7 +81,7 @@ class BuyRequest(APIView):
     send_mail(subject, html_content, 'kshong@coche.dnip.net', [to])
 
   def post(self, request, format=None):
-    pdb.set_trace()
+    #pdb.set_trace()
     # html 접근일 경우
     if request.accepted_renderer.format == 'html':
       form = NewBuyForm(request.POST)
@@ -97,11 +98,11 @@ class BuyRequest(APIView):
         return Response(data, status = respStatus, template_name='buyrequest_result.html')
       # 저장후 구매 요청 확인 메일 송신
       buy = form.save()
-      self.send_email(buy.bid, buy.email)
+      self.send_email(buy.id, buy.email)
       data = {'msg':'saved', 'errcode':'000'}
       respStatus = status.HTTP_201_CREATED
       return Response(data, status = respStatus, template_name='buyrequest_result.html')
-    # html 이외 접근일경우 (모바일)
+    # 모바일 접근일경우
     else:
       buy = BuyRequestSerializer(data=request.DATA)
       if not serializer.is_valid():
@@ -116,7 +117,7 @@ class BuyRequest(APIView):
         return Response(data, status = respStatus)
       # 저장후 구매 요청 확인 메일 송신
       buy.save()
-      self.send_email(buy.bid, buy.email)
+      self.send_email(buy.id, buy.email)
       #buy = Buy.objects.filter(email=serializer.data['email']).filter(is_done=False)
       #self.send_email(buy[0].bid, buy[0].email)
       data = {'msg':'saved', 'errcode':'000'}
@@ -127,7 +128,7 @@ class BuyRequest(APIView):
     if request.accepted_renderer.format == 'html':
       form = NewBuyForm()
       data = {'form': form}
-      return Response(data, template_name='buyrequest_post.html')
+      return Response(data, template_name='buyrequest_get.html')
     else:
       data = "GET not allowed"
       respStatus = status.HTTP_400_BAD_REQUEST
@@ -142,7 +143,7 @@ class ConfirmBuy(APIView):
       data = {'msg':'CONFIRM ERROR'}
     else:
       try:
-        buy = Buy.objects.get(bid=bid)
+        buy = Buy.objects.get(id=bid)
         if (buy.is_confirmed == True):
           data = {'msg':'ALREADY CONFIRMED'}
         else:
@@ -155,40 +156,67 @@ class ConfirmBuy(APIView):
     return Response(data, status = respStatus, template_name='confirm.html')
 
 
+class GetCID(APIView):
+  def get(self, request):
+    pdb.set_trace()
+    maker = Maker.get_object_or_404(id=request.GET.get('mid', None))
+    resp = ",".join(maker.car_set.values_list('name', flat=True))
+    return HttpResponse(resp)
+  def post(self, request):
+    pdb.set_trace()
+    resp = ",".join(maker.car_set.values_list('name', flat=True))
+    return HttpResponse(resp)
+
+
 # 구매요청 변경
 class BuyChange(APIView):
   def post(self, request, format=None):
     pdb.set_trace()
     # html 접근일 경우
     if request.accepted_renderer.format == 'html':
-      new_form = NewBuyForm(request.POST)
-      # 최초 이메일과 패스워드 입력인 경우
-      if not new_form.is_valid():
-        form = ChangeBuyForm(request.POST)
-        # 맞는 Buy 검색
-        try:
-          buy = Buy.objects.filter(email=form.data['email']).filter(passwd=form.data['passwd']).filter(is_done=False)
-        except StandardError:
-          resp_status = status.HTTP_400_BAD_REQUEST
-          data = {'msg':'invalid form', 'errcode':'103'}
-        else:
-          data = {'buy':buy}
-          resp_status = status.HTTP_200_OK
-        return Response(data, status=resp_status, template_name='buychange_post.html')
-      # 변경된 Buy를 받는 경우
-      else:
+      changed_form = ChangeBuyForm(request.POST)
+      # 변경된 구매요청에 대한 POST 요청인 경우
+      if changed_form.is_valid():
+        orig_buy = Buy.objects.get(email=changed_form.data['email'], is_done=False)
+        orig_buy.is_done = request.POST.get('is_cancel', False)
+        form = ChangeBuyForm(request.POST, instance=orig_buy)
+        buy = form.save()
+        data = {'buy':buy}
         resp_status = status.HTTP_200_OK
-        return Response(status = resp_status)
+        return Response(data, status=resp_status, template_name='buychange_result.html')
+      # 변경할 구매요청 대상을 선택하는 POST 요청인 경우
+      else:
+        form = VerifyBuyForm(request.POST)
+        if form.is_valid():
+          # 맞는 Buy 검색
+          try:
+            #buy = Buy.objects.filter(email=form.data['email']).filter(passwd=form.data['passwd']).filter(is_done=False)
+            buy = Buy.objects.get(email=form.data['email'],passwd=form.data['passwd'],is_done=False)
+          except Buy.DoesNotExist:
+            resp_status = status.HTTP_400_BAD_REQUEST
+            data = {'msg':'buy does not exist', 'errcode':'103'}
+          else:
+            form = ChangeBuyForm(instance=buy)
+            form.fields['email'].widget.attrs['readonly'] = True
+            data = {'form':form}
+            resp_status = status.HTTP_200_OK
+            #data = {'buys':buy}
+            #resp_status = status.HTTP_200_OK
+          return Response(data, status=resp_status, template_name='buychange_post.html')
+        else:
+          resp_status = status.HTTP_400_BAD_REQUEST
+          return Response(data, status=resp_status, template_name='buychange_result.html')
     # 모바일 접근일 경우
     else:
+      changed_buy = ChangeBuySerializer(data=request.DATA)
       resp_status = status.HTTP_200_OK
       return Response(status = resp_status)
 
   def get(self, request, format=None):
     if request.accepted_renderer.format == 'html':
-      form = ChangeBuyForm()
+      form = VerifyBuyForm()
       data = {'form': form}
-      return Response(data, template_name='buychange_post2.html')
+      return Response(data, template_name='buychange_get.html')
     else:
       data = "GET not allowed"
       respStatus = status.HTTP_400_BAD_REQUEST
@@ -393,7 +421,7 @@ class Login(APIView):
         dealer = Dealer.objects.get(user_id=user.id)
         if dealer and user.is_active and dealer.is_confirmed:
           login(request, user)
-          msg = 'login succedd'
+          msg = 'login succeed'
           resp_code = '000'
           resp_status = status.HTTP_200_OK
         else:
@@ -448,7 +476,7 @@ class Logout(APIView):
 # 구매요청 검색 뷰 for anyone
 class BuyListFree(APIView):
   def get(self, request, mid, cid='0', addr1='ANY', format=None):
-    pdb.set_trace()
+#    pdb.set_trace()
     # HTML 요청일 경우
     if request.accepted_renderer.format == 'html':
       if (int(mid) <= 0):
@@ -463,9 +491,9 @@ class BuyListFree(APIView):
         data = {'msg':msg, 'resp code':resp_code}
       else:
         if (int(cid) == 0):
-          buy_list = Buy.objects.filter(mid_id=mid).filter(is_confirmed=True)
+          buy_list = Buy.objects.filter(maker_id=mid).filter(is_confirmed=True)
         else:
-          buy_list = Buy.objects.filter(cid_id=cid).filter(is_confirmed=True)
+          buy_list = Buy.objects.filter(car_id=cid).filter(is_confirmed=True)
         if (buy_list.count() > 0 and addr1 <> 'ANY'):
           buy_list = buy_list.filter(addr1__contains=addr1)
         if (buy_list.count() == 0):

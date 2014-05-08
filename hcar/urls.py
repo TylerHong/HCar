@@ -24,7 +24,7 @@ urlpatterns = patterns('',
     url(u'^nuevo/buyrequest/?$', views.BuyRequest.as_view()),
     url(u'^nuevo/confirm_buy/(?P<bid>[0-9]+)/?$', views.ConfirmBuy.as_view()),
     url(u'^nuevo/buychange/?$', views.BuyChange.as_view()),
-
+    url(u'^nuevo/getcid/?$', views.GetCID.as_view(), name="get_cid"),
 
     # 딜러 회원가입 뷰
     url(u'^nuevo/register/?$', views.Register.as_view()),

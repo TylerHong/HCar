@@ -3,31 +3,7 @@
 Buy request result
 </head>
 <body>
-{% if cars %}
-    Cars are available.<br><br>
-    <table border=1 cellpadding=5 cellspacing=2>
-    <tr>
-        <td>MID</td>
-        <td>MNAME</td>
-        <td>CID</td>
-        <td>CNAME</td>
-        <td>TID</td>
-        <td>TNAME</td>
-    </tr>
-    {% for car in cars %}
-    <tr>
-        <td>{{ car.cnid.mid.mid }}</td>
-        <td>{{ car.cnid.mid.mname }}</td>
-        <td>{{ car.cnid.cnid }}</td>
-        <td>{{ car.cnid.cname }}</td>
-        <td>{{ car.cid }}</td>
-        <td>{{ car.cname }}</td>
-    </tr>
-    {% endfor %}
-    </table>
-{% else %}
     <p>{{msg}}</p>
     <p>{{errcode}}</p>
-{% endif %}
 </body>
 </html>
