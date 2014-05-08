@@ -4,12 +4,18 @@ from django.forms import ModelForm
 from django.contrib.auth.models import User
 from newcar.models import Buy, Dealer
 
-class BuyForm(ModelForm):
+class NewBuyForm(ModelForm):
     passwd = forms.CharField(widget=forms.PasswordInput())
     class Meta:
         model = Buy
         fields = ['mid', 'cid', 'tid', 'nickname', 'email', 'passwd',
                   'cellphone', 'detail', 'addr1', 'addr2', 'zipcode']
+
+class ChangeBuyForm(ModelForm):
+    passwd = forms.CharField(widget=forms.PasswordInput())
+    class Meta:
+        model = Buy
+        fields = ['email', 'passwd']
 
 class UserForm(ModelForm):
     password = forms.CharField(widget=forms.PasswordInput())

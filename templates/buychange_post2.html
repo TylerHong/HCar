@@ -1,0 +1,14 @@
+<html>
+	<head>
+		<title>Change B</title>
+	</head>
+	<body>
+<h1>Change B</h1>
+<form method="post" action="./buychange">
+{% csrf_token %}
+{{ form.as_p }}
+<input type="submit" value="Submit" />
+</form>
+</body>
+</html>
+
