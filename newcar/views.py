@@ -9,7 +9,7 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 from Crypto.Cipher import AES
 from newcar.models import Maker, Car, Trim, Nation, Address, Buy, Dealer
-from newcar.forms import NewBuyForm, VerifyBuyForm, ChangeBuyForm, UserForm, DealerForm
+from newcar.forms import NewBuyForm, BuyForm, VerifyBuyForm, ChangeBuyForm, UserForm, DealerForm
 from newcar.serializers import MakerSerializer, CarSerializer, TrimSerializer, AddressSerializer
 from newcar.serializers import BuyRequestSerializer, VerifyBuySerializer, ChangeBuySerializer
 from newcar.serializers import BuyListFreeSerializer, NewUserSerializer, NewDealerSerializer
@@ -80,50 +80,51 @@ class BuyRequest(APIView):
     html_content = render_to_string('html_buy_confirm.html', {'id': bid})
     send_mail(subject, html_content, 'kshong@coche.dnip.net', [to])
 
+  # POST 구매요청
   def post(self, request, format=None):
-    #pdb.set_trace()
+    pdb.set_trace()
     # html 접근일 경우
     if request.accepted_renderer.format == 'html':
-      form = NewBuyForm(request.POST)
+      form = BuyForm(request.POST)
       # form 확인
-      if not form.is_valid():
-        data = {'msg':'invalid form', 'errcode':'103'}
-        respStatus = status.HTTP_400_BAD_REQUEST
-        return Response(data, status = respStatus, template_name='buyrequest_result.html')
-      # 동일 이메일로 완료되지 않은 구매 요청이 있는지 확인
-      oldReqs = Buy.objects.filter(email=form.cleaned_data['email']).filter(is_done=False)
-      if (oldReqs.count() > 0):
-        data = {'msg':'save failed. same email exists', 'errcode':'101'}
-        respStatus = status.HTTP_409_CONFLICT
-        return Response(data, status = respStatus, template_name='buyrequest_result.html')
-      # 저장후 구매 요청 확인 메일 송신
-      buy = form.save()
-      self.send_email(buy.id, buy.email)
-      data = {'msg':'saved', 'errcode':'000'}
-      respStatus = status.HTTP_201_CREATED
-      return Response(data, status = respStatus, template_name='buyrequest_result.html')
+      if form.is_valid():
+        # 동일 이메일로 완료되지 않은 구매 요청이 있는지 확인
+        oldReqs = Buy.objects.filter(email=form.cleaned_data['email']).filter(is_done=False)
+        if (oldReqs.count() > 0):
+          data = {'msg':'save failed. same email exists', 'errcode':'101', 'err':form.errors}
+          resp_status = status.HTTP_409_CONFLICT
+        # 저장후 구매 요청 확인 메일 송신
+        else:
+          buy = form.save()
+          self.send_email(buy.id, buy.email)
+          data = {'msg':'saved', 'errcode':'000'}
+          resp_status = status.HTTP_201_CREATED
+      # invalid form일 경우
+      else:
+        data = {'msg':'invalid form', 'errcode':'103', 'err':form.errors}
+        resp_status = status.HTTP_400_BAD_REQUEST
+      return Response(data, status = resp_status, template_name='buyrequest_result.html')
+
     # 모바일 접근일경우
     else:
       buy = BuyRequestSerializer(data=request.DATA)
-      if not serializer.is_valid():
+      if serializer.is_valid():
+        # 동일 이메일로 완료되지 않은 구매 요청이 있는지 확인
+        oldReqs = Buy.objects.filter(email=serializer.data['email']).filter(is_done=False)
+        if (oldReqs.count() > 0):
+          data = {'msg':'save failed. same email exists', 'errcode':'101'}
+          resp_status = status.HTTP_409_CONFLICT
+        else:    # 저장후 구매 요청 확인 메일 송신
+          buy.save()
+          self.send_email(buy.id, buy.email)
+          data = {'msg':'saved', 'errcode':'000'}
+          resp_status = status.HTTP_201_CREATED
+      else:
         data = {'msg':'invalid request', 'errcode':'102'}
-        respStatus = status.HTTP_400_BAD_REQUEST
-        return Response(data, status = respStatus)
-      # 동일 이메일로 완료되지 않은 구매 요청이 있는지 확인
-      oldReqs = Buy.objects.filter(email=serializer.data['email']).filter(is_done=False)
-      if (oldReqs.count() > 0):
-        data = {'msg':'save failed. same email exists', 'errcode':'101'}
-        respStatus = status.HTTP_409_CONFLICT
-        return Response(data, status = respStatus)
-      # 저장후 구매 요청 확인 메일 송신
-      buy.save()
-      self.send_email(buy.id, buy.email)
-      #buy = Buy.objects.filter(email=serializer.data['email']).filter(is_done=False)
-      #self.send_email(buy[0].bid, buy[0].email)
-      data = {'msg':'saved', 'errcode':'000'}
-      respStatus = status.HTTP_201_CREATED
-      return Response(data, status = respStatus)
+        resp_status = status.HTTP_400_BAD_REQUEST
+      return Response(data, status = resp_status)
 
+  # GET 구매요청
   def get(self, request, format=None):
     if request.accepted_renderer.format == 'html':
       form = NewBuyForm()
@@ -136,9 +137,9 @@ class BuyRequest(APIView):
 
 
 # 구매요청 검증 뷰
-class ConfirmBuy(APIView):
+class BuyConfirm(APIView):
   def get(self, request, bid, format=None):
-    respStatus = status.HTTP_200_OK
+    resp_status = status.HTTP_200_OK
     if (int(bid) <= 0):
       data = {'msg':'CONFIRM ERROR'}
     else:
@@ -151,11 +152,12 @@ class ConfirmBuy(APIView):
           buy.save()
           data = {'msg':'CONFIRMED'}
       except Buy.DoesNotExist:
-        respStatus = status.HTTP_400_BAD_REQUEST
+        resp_status = status.HTTP_400_BAD_REQUEST
         data = {'msg':'BAD REQUEST'}
-    return Response(data, status = respStatus, template_name='confirm.html')
+    return Response(data, status = resp_status, template_name='confirm.html')
 
 
+# 구매요청 시 차종을 ajax로 선택하게 하기 위한 뷰
 class GetCID(APIView):
   def get(self, request):
     pdb.set_trace()
@@ -219,8 +221,8 @@ class BuyChange(APIView):
       return Response(data, template_name='buychange_get.html')
     else:
       data = "GET not allowed"
-      respStatus = status.HTTP_400_BAD_REQUEST
-      return Response(data, status = respStatus)
+      resp_status = status.HTTP_400_BAD_REQUEST
+      return Response(data, status = resp_status)
 
 
 
@@ -237,7 +239,7 @@ class BuyChange(APIView):
 
 
 # 딜러 회원 가입
-class Register(APIView):
+class DealerRegister(APIView):
   def send_email(self, id, to):
     subject = 'Confirm message from hcar'
     text_content = 'This is important message.'
@@ -298,10 +300,9 @@ class Register(APIView):
 
     # html 이외 접근일경우 (모바일)
     else:
+      # Dealer 모델은 user id가 반드시 필요하여 클라이언트에서 임시로 uid를 1로 올림
       user = NewUserSerializer(data=request.DATA)
-      d = Dealer.objects.create(user=user)
       dealer = NewDealerSerializer(data=request.DATA)
-#      d2 = NewDealerSerializer(dealer_serializer, data={'user':1},partial=True)
       if user.is_valid() and dealer.is_valid():
         # 동일 이메일로 완료되지 않은 구매 요청이 있는지 확인
         old_users = User.objects.filter(email=request.DATA['email'])
@@ -342,20 +343,8 @@ class Register(APIView):
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
 # 딜러 검증 뷰
-class ConfirmDealer(APIView):
+class DealerConfirm(APIView):
   def get(self, request, id, format=None):
     respStatus = status.HTTP_200_OK
     if (int(id) <= 0):
@@ -373,12 +362,13 @@ class ConfirmDealer(APIView):
           dealer.save()
           data = {'msg':'CONFIRMED'}
       except Dealer.DoesNotExist:
-        respStatus = status.HTTP_400_BAD_REQUEST
+        resp_status = status.HTTP_400_BAD_REQUEST
         data = {'msg':'BAD REQUEST'}
-    return Response(data, status = respStatus, template_name='confirm.html')
+    return Response(data, status = resp_status, template_name='confirm.html')
+
 
 # 딜러 로그인 뷰
-class Login(APIView):
+class DealerLogin(APIView):
   def _lazysecret(self, secret, blocksize=32, padding='}'):
     """pads secret if not legal AES block size (16, 24, 32)"""
     if not len(secret) in (16, 24, 32):
@@ -455,7 +445,7 @@ class Login(APIView):
 
 
 # 딜러 로그아웃 뷰
-class Logout(APIView):
+class DealerLogout(APIView):
   def get(self, request, format=None):
     if request.accepted_renderer.format == 'html':
       if request.user.is_authenticated():

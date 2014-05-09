@@ -5,5 +5,16 @@ Buy request result
 <body>
     <p>{{msg}}</p>
     <p>{{errcode}}</p>
+{% if err %}
+    <table border=1 cellpadding=5 cellspacing=2>
+{% for e in err %}
+    <tr>
+        <td>{{err}}</td>
+    </tr>
+{% endfor %}
+    </table>
+{% endif %}
+</body>
+</html>
 </body>
 </html>
