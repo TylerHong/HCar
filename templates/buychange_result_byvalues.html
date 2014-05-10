@@ -1,0 +1,21 @@
+<html>
+<head>
+Buy request result
+</head>
+<body>
+{% if buy %}
+    changed<br><br>
+    <table border=1 cellpadding=5 cellspacing=2>
+    {% for k, v in buy %}
+    <tr>
+        <td>{{k}}</td>
+        <td>{{v}}</td>
+    </tr>
+    {% endfor %}
+    </table>
+{% else %}
+    <p>{{msg}}</p>
+    <p>{{errcode}}</p>
+{% endif %}
+</body>
+</html>

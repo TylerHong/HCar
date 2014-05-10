@@ -24,22 +24,16 @@ class AddressSerializer(serializers.ModelSerializer):
     fields = ('addr1', 'addr2')
 
 # 구매요청 등록 시 사용
-class BuyRequestSerializer(serializers.ModelSerializer):
+class BuyNewSerializer(serializers.ModelSerializer):
   class Meta:
     model = Buy
-    fields = ('maker', 'car', 'trim', 'is_lease', 'is_new', 'name',
-              'email', 'passwd', 'cellphone', 'detail', 'addr1', 'addr2', 'zipcode')
+    fields = ('maker', 'car', 'trim', 'is_lease', 'is_new', 'cellphone', 'detail', 'addr1', 'addr2', 'zipcode')
 
-class VerifyBuySerializer(serializers.ModelSerializer):
+class BuyModifySerializer(serializers.ModelSerializer):
   class Meta:
     model = Buy
-    fields = ('email', 'passwd')
-
-class ChangeBuySerializer(serializers.ModelSerializer):
-  class Meta:
-    model = Buy
-    fields = ('maker', 'car', 'trim', 'is_lease', 'is_new', 'name',
-              'email', 'passwd', 'cellphone', 'detail', 'addr1', 'addr2', 'zipcode', 'is_cancel')
+    fields = ('maker', 'car', 'trim', 'is_lease', 'is_new', 'cellphone', 'detail', 'addr1', 'addr2', 'zipcode',
+              'is_cancel')
 
 # 무료로 조회 가능한 구매요청 목록
 class BuyListFreeSerializer(serializers.ModelSerializer):

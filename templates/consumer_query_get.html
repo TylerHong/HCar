@@ -1,0 +1,17 @@
+<html>
+<head>
+<title>Buy Request Query</title>
+</head>
+<body>
+<p>B Request Query</p>
+<form id="login_form" method="post" action="/nuevo/consumer/query/">
+{% csrf_token %}
+E-mail : <input type = "text" name="email" value="" size="50"/><br />
+Password : <input type = "password" name="password" value="" size="50"/><br />
+<input type="hidden" name="next" value="/" />
+<input type="submit" value="Query" />
+</form>
+</body>
+</html>
+
+

@@ -1,7 +1,7 @@
 <html>
 <body>
 {% if form %}
-  <form method="post" action="./consumer/change">
+  <form method="post" action="./consumer/modify">
   {% csrf_token %}
   {{ form.as_p }}
   <input type="submit" value="Submit" />

@@ -4,17 +4,43 @@ Buy request result
 </head>
 <body>
 {% if buy %}
-    changed<br><br>
+  {% if buy.is_cancel %}
+    Canceled<br>
+  {% else %}
+    modified<br><br>
     <table border=1 cellpadding=5 cellspacing=2>
     <tr>
-        <td>BID</td>
-        <td>EMAIL</td>
+        <td>Name</td> <td>{{buy.user.username}}</td>
     </tr>
     <tr>
-        <td>{{ buy.bid }}</td>
-        <td>{{ buy.email }}</td>
+        <td>Email</td> <td>{{buy.user.email}}</td>
+    </tr>
+    <tr>
+        <td>Maker</td> <td>{{buy.maker}}</td>
+    </tr>
+    <tr>
+        <td>Car</td> <td>{{buy.car}}</td>
+    </tr>
+    <tr>
+        <td>Trim</td> <td>{{buy.trim}}</td>
+    </tr>
+    <tr>
+        <td>Cellphone</td> <td>{{buy.cellphone}}</td>
+    </tr>
+    <tr>
+        <td>Detail</td> <td>{{buy.detail}}</td>
+    </tr>
+    <tr>
+        <td>Addr1</td> <td>{{buy.addr1}}</td>
+    </tr>
+    <tr>
+        <td>Addr2</td> <td>{{buy.addr2}}</td>
+    </tr>
+    <tr>
+        <td>Zipcode</td> <td>{% if buy.zipcode %}{{buy.zipcode}}{% else %}{{None}}{%endif%}</td>
     </tr>
     </table>
+  {% endif %}
 {% else %}
     <p>{{msg}}</p>
     <p>{{errcode}}</p>

@@ -4,9 +4,10 @@
   </head>
   <body>
 <p>Register B</p>
-<form method="post" action="./consumer/request">
+<form method="post" action="/nuevo/consumer/request">
 {% csrf_token %}
-{{ form.as_p }}
+{{ user_form.as_p}}
+{{ buy_form.as_p }}
 <input type="submit" value="Submit"/>
 </form>
 <script> 

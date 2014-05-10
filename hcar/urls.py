@@ -19,10 +19,11 @@ urlpatterns = patterns('',
     url(u'^nuevo/address/(?P<nid>[0-9]+)/?$', views.AddressList.as_view()),
 
     # 이하 소비자 관련 URL
-    url(u'^nuevo/consumer/request/?$', views.BuyRequest.as_view()),      # 신규 구매요청 등록
-    url(u'^nuevo/consumer/confirm/(?P<bid>[0-9]+)/?$', views.BuyConfirm.as_view()),      # 구매요청 확인
-    #url(u'^nuevo/consumer/login/(?P<bid>[0-9]+)/?$', views.ConsumerLogin.as_view()),   # 구매요청 확인
-    url(u'^nuevo/consumer/change/?$', views.BuyChange.as_view()),        # 구매요청 변경 및 취소
+    url(u'^nuevo/consumer/request/?$', views.BuyNew.as_view()),      # 신규 구매요청 등록
+    url(u'^nuevo/consumer/confirm/(?P<bid>[0-9]+)/?$', views.BuyConfirm.as_view()),    # 구매요청 확인
+    url(u'^nuevo/consumer/query/?$', views.BuyQuery.as_view()),   # 본인 구매요청 조회
+    url(u'^nuevo/consumer/modify/(?P<bid>[0-9]+)/?$', views.BuyModify.as_view()),        # 구매요청 변경 및 취소
+    url(u'^nuevo/consumer/done/(?P<bid>[0-9]+)/?$', views.BuyDone.as_view()),        # 구매요청 변경 및 취소
     url(u'^nuevo/getcid/?$', views.GetCID.as_view(), name="get_cid"),    # ajax용
 
     # 이하 딜러 관련 URL

@@ -39,7 +39,7 @@ class Dealer(models.Model):
     maker = models.ForeignKey(Maker)
     branch = models.CharField(max_length=20)    # 지점명
     intro = models.TextField(null=True)         # 자기소개
-    phone = models.CharField(max_length=12, null=True)
+    phone = models.CharField(max_length=12, null=False)
     addr1 = models.CharField(max_length=20)
     addr2 = models.CharField(max_length=30)
     addr3 = models.CharField(max_length=100, blank=True)
@@ -53,15 +53,12 @@ class Dealer(models.Model):
         return self.user.username
 
 class Buy(models.Model):
-    id = models.AutoField(primary_key=True)
+    user = models.ForeignKey(User, null=True, on_delete=models.SET_NULL)
     maker = models.ForeignKey(Maker)
     car = models.ForeignKey(Car)
     trim = models.ForeignKey(Trim)
     is_lease = models.BooleanField(default=False)
     is_new = models.BooleanField(default=True)
-    name = models.CharField(max_length=20)
-    email = models.EmailField(max_length=50, null=False)
-    passwd = models.CharField(max_length=25)
     cellphone = models.CharField(max_length=15)
     detail = models.CharField(max_length=100, null=True, help_text='Color, Option, etc.')
     addr1 = models.CharField(max_length=20)
@@ -76,7 +73,7 @@ class Buy(models.Model):
     dealer_email = models.EmailField(max_length=50, null=True)  # 성사된 딜러 메일
     satisfaction = models.PositiveIntegerField(default=3)
     def __unicode__(self):
-        return self.email
+        return self.user.username
 
 # 딜러의 구매요청 조회 기록
 class DealerInquiryLog(models.Model):

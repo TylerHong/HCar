@@ -1,0 +1,33 @@
+<html>
+<head>
+My buy request query result
+</head>
+<body>
+My b request<br><br>
+{% if buy %}
+  <table border=1 cellpadding=5 cellspacing=2>
+  <tr>
+    <td>car</td><td>E-mail</td><td>clicked num buy dealer</td><td>Action</td>
+  </tr>
+  <tr>
+    <td><a href='http://coche.dnip.net/nuevo/consumer/modify/{{buy.id}}/'>
+      {{buy.maker.name}} {{buy.car.name}} {{buy.trim.name}}</a></td>
+    <td>{{buy.user.email}}</td>
+    <td>&nbsp;</td>
+    <td>
+      <form action='/nuevo/consumer/modify/{{buy.id}}/' method="get">
+        <input type="submit" value='Modify'/>
+      </form>
+      <form action='/nuevo/consumer/done/{{buy.id}}/' method="get">
+        <input type="submit" value='Done'/>
+      </form>
+    </td>
+    </td>
+  </tr>
+  </table>
+{% else %}
+  <p>Bad request</p>
+  <p>  {{msg}}</p>
+{% endif %}
+</body>
+</html>
