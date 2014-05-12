@@ -1,0 +1,36 @@
+<html>
+<head>
+  <title>Done B</title>
+</head>
+
+<body>
+<p>Done B</p>
+{% if form and buy%}
+  <form method="post" action="/nuevo/consumer/done/{{bid}}/">
+  <table border=1 cellpadding=5 cellspacing=2>
+  <tr><th>Car</th><td>{{buy.maker.name}}&nbsp;{{buy.car.name}}&nbsp;{{buy.trim.name}}</tr>
+  <tr><th>Detail</th><td>{{buy.detail}}</td></tr>
+    {% csrf_token %}
+    {{ form.as_table }}
+    <input type="submit" value="Done" />
+  </table>
+  </form>
+{% else %}
+  <table>
+  <tr>
+  <td>
+  {{msg}}<br>
+  {% if error_code = '999' %}
+    </td><td>
+      <form action='/nuevo/consumer/query/' method="get">
+        <input type="submit" value='Query'/>
+      </form>
+  {% endif %}
+  </td>
+  </tr>
+  </table>
+{% endif %}
+<br>
+</body>
+</html>
+

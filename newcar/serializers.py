@@ -21,7 +21,7 @@ class TrimSerializer(serializers.ModelSerializer):
 class AddressSerializer(serializers.ModelSerializer):
   class Meta:
     model = Address
-    fields = ('addr1', 'addr2')
+    fields = ('id', 'nation', 'addr1', 'addr2')
 
 # 구매요청 등록 시 사용
 class BuyNewSerializer(serializers.ModelSerializer):
@@ -34,6 +34,13 @@ class BuyModifySerializer(serializers.ModelSerializer):
     model = Buy
     fields = ('maker', 'car', 'trim', 'is_lease', 'is_new', 'cellphone', 'detail', 'addr1', 'addr2', 'zipcode',
               'is_cancel')
+
+class BuyDoneSerializer(serializers.ModelSerializer):
+  class Meta:
+    model = Buy
+    fields = ('maker', 'car', 'trim', 'is__lease', 'is_new', 'cellphone', 'detail', 'addr1', 'addr2', 'zipcode')
+
+
 
 # 무료로 조회 가능한 구매요청 목록
 class BuyListFreeSerializer(serializers.ModelSerializer):
@@ -51,7 +58,7 @@ class BuyListSerializer(serializers.ModelSerializer):
 class LoginSerializer(serializers.ModelSerializer):
   class Meta:
     model = User
-    fields = ('username', 'password')
+    fields = ('email', 'password')
 
 class NewUserSerializer(serializers.ModelSerializer):
   class Meta:

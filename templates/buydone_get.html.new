@@ -1,0 +1,40 @@
+<html>
+<head>
+  <title>Done B</title>
+</head>
+
+<body>
+<p>Done B</p>
+{% if buy%}
+  <form method="post" action="/nuevo/consumer/done/">
+  <input type='hidden' name='csrfmiddlewaretoken' value='Zq3ZX0PlXggxznb4BM6GWR4DLrxPcja7' />
+    <table border=1 cellpadding=5 cellspacing=2>
+    <tr><th>Car:</th><td>{{buy.maker.name}}&nbsp;{{buy.car.name}}&nbsp;{{buy.trim.name}}</tr>
+    <tr><th>Detail:</th><td>{{buy.detail}}</td></tr>
+    <tr><th><label for="id_dealer_email">Dealer email:</label></th>
+        <td><input id="id_dealer_email" maxlength="50" name="dealer_email" type="email" /></td></tr>
+    <tr><th><label for="id_satisfaction">Satisfaction:</label></th>
+        <td><input id="id_satisfaction" min="0" max="5" name="satisfaction" type="number" value="3" /></td></tr>
+    </table>
+    <input type="submit" value="Done" />
+  </form>
+
+{% else %}
+  <table>
+  <tr>
+  <td>
+  {{msg}}<br>
+  {% if error_code = '999' %}
+    </td><td>
+      <form action='/nuevo/consumer/query/' method="get">
+        <input type="submit" value='Query'/>
+      </form>
+  {% endif %}
+  </td>
+  </tr>
+  </table>
+{% endif %}
+<br>
+</body>
+</html>
+

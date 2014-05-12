@@ -5,14 +5,15 @@ from rest_framework.response import Response
 from django.template.loader import render_to_string
 from django.core.mail import send_mail
 from django.http import HttpResponse
+from datetime import datetime
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 from django.forms.models import modelformset_factory
 from Crypto.Cipher import AES
 from newcar.models import Maker, Car, Trim, Nation, Address, Buy, Dealer
-from newcar.forms import BuyNewForm, BuyForm, BuyModifyForm, UserForm, DealerForm
+from newcar.forms import BuyNewForm, BuyForm, BuyModifyForm, BuyDoneForm, UserForm, DealerForm
 from newcar.serializers import MakerSerializer, CarSerializer, TrimSerializer, AddressSerializer
-from newcar.serializers import BuyNewSerializer, BuyModifySerializer
+from newcar.serializers import BuyNewSerializer, LoginSerializer, BuyModifySerializer
 from newcar.serializers import BuyListFreeSerializer, NewUserSerializer, NewDealerSerializer
 import pdb;
 
@@ -63,8 +64,8 @@ class AddressList(APIView):
     if (nid == '0'):
       return Response(data, template_name='list_address.html')
     else:
-      nation = Nation.objects.get(nid=nid)
-      address = Address.objects.filter(nid=nation).order_by('aid')
+      nation = Nation.objects.get(id=nid)
+      address = Address.objects.filter(nation=nation).order_by('id')
       if request.accepted_renderer.format == 'html':
         data = {'addresses': address}
         return Response(data, template_name='list_address.html')
@@ -152,21 +153,21 @@ class BuyNew(APIView):
         # 저장후 구매 요청 확인 메일 송신
         else:
           try:
-            user.save()
-            user.is_active = False
-            user.set_password(user.password)
-            user.save()
-            buy.save()
-            buy.user = user
-            buy.cellphone = buy.cellphone.translate({ord('-'):None})
-            buy.save()
+            saved_user = user.save()
+            saved_user.is_active = False
+            saved_user.set_password(saved_user.password)
+            saved_user.save()
+            saved_buy = buy.save()
+            saved_buy.user = saved_user
+            saved_buy.cellphone = saved_buy.cellphone.translate({ord('-'):None})
+            saved_buy.save()
           except StandardError:
-            if not user == None:
-              User.objects.filter(id = user.id).delete()
+            if not saved_user == None:
+              User.objects.filter(id = saved_user.id).delete()
             resp_status = status.HTTP_400_BAD_REQUEST
           else:
             # 저장후 구매요청 확인 메일 송신
-            self.send_email(buy.id, user.email)
+            self.send_email(saved_buy.id, saved_user.email)
             data = {'msg':'saved', 'errcode':'000'}
             resp_status = status.HTTP_201_CREATED
       else:
@@ -219,7 +220,7 @@ class BuyQuery(APIView):
       return Response(data, status = resp_status)
  
   def post(self, request, format=None):
-    pdb.set_trace()
+#    pdb.set_trace()
     # html POST 접근일 경우
     if request.accepted_renderer.format == 'html':
       data = {}
@@ -256,20 +257,62 @@ class BuyQuery(APIView):
 
     # 모바일 POST 접근일경우
     else:
-      data = {}
-      email = request.POST['email']
-      password = request.POST['password']
-      user = User.objects.filter(is_active=True).get(email=email)
-      consumer = authenticate(username=user.username, password=password)
-      if consumer:
+      user_raw = LoginSerializer(request.DATA)
+      user = User.objects.filter(is_active=True).filter(email=user_raw.data['email'])
+      if user:
+        consumer = authenticate(username=user[0].username, password=user_raw.data['password'])
+      if user and consumer:
+        user = user[0]
         buy = Buy.objects.get(user_id=consumer.id)
+        if buy:
+          if buy.is_confirmed:
+            login(request, consumer)
+            resp_code = '000'
+            resp_status = status.HTTP_200_OK
+            data = {'buy':buy, 'resp_code':resp_code}
+          else:
+            msg = 'your request not confirmed yet'
+            resp_code = '101'
+            resp_status = status.HTTP_400_BAD_REQUEST
+            data = {'msg':msg, 'resp_code':resp_code}
+        else:
+          msg = 'no buy request'
+          resp_code = '101'
+          resp_status = status.HTTP_400_BAD_REQUEST
+          data = {'msg':msg, 'resp_code':resp_code}
       else:
+        msg = 'invalid email/password'
+        resp_code = '101'
         resp_status = status.HTTP_400_BAD_REQUEST
-      return Response(status = resp_status)
+        data = {'msg':msg, 'resp_code':resp_code}
+      return Response(data, status = resp_status, template_name='consumer_query_result.html')
 
 
 # 구매요청 변경
 class BuyModify(APIView):
+  def get(self, request, bid, format=None):
+#    pdb.set_trace()
+    if request.accepted_renderer.format == 'html':
+      if not request.user.is_authenticated():
+        data = {'msg':'Query first', 'error_code':'999'}
+        resp_status = status.HTTP_400_BAD_REQUEST
+        return Response(data, status=resp_status, template_name='buychange_get.html')
+      buy = Buy.objects.get(id=bid)
+      if buy:
+        initial_value = BuyModifySerializer(buy)
+        form = BuyModifyForm(initial=initial_value.data)
+        data = {'buy_form':form}
+        data['msg'] = 'Name : '+buy.user.username+'<'+buy.user.email+'>'
+        data['bid']= bid
+      else:
+        data = {'msg':'Buy request does not exists'}
+        resp_status = status.HTTP_400_BAD_REQUEST
+      return Response(data, template_name='buychange_get.html')
+    else:
+      data = "GET not allowed"
+      resp_status = status.HTTP_400_BAD_REQUEST
+      return Response(data, status = resp_status)
+
   def post(self, request, bid, format=None):
 #    pdb.set_trace()
     # html 접근일 경우
@@ -304,6 +347,9 @@ class BuyModify(APIView):
       resp_status = status.HTTP_200_OK
       return Response(status = resp_status)
 
+
+# 구매요청 완료
+class BuyDone(APIView):
   def get(self, request, bid, format=None):
 #    pdb.set_trace()
     if request.accepted_renderer.format == 'html':
@@ -313,45 +359,57 @@ class BuyModify(APIView):
         return Response(data, status=resp_status, template_name='buychange_get.html')
       buy = Buy.objects.get(id=bid)
       if buy:
-        initial_value = BuyModifySerializer(buy)
-        form = BuyModifyForm(initial=initial_value.data)
-        data = {'buy_form':form}
-        data['msg'] = 'Name : '+buy.user.username+'<'+buy.user.email+'>'
+        form = BuyDoneForm()
+        data = {'buy':buy, 'form':form}
         data['bid']= bid
       else:
         data = {'msg':'Buy request does not exists'}
         resp_status = status.HTTP_400_BAD_REQUEST
-      return Response(data, template_name='buychange_get.html')
+      return Response(data, template_name='buydone_get.html')
     else:
       data = "GET not allowed"
       resp_status = status.HTTP_400_BAD_REQUEST
       return Response(data, status = resp_status)
 
-
-# 구매요청 완료
-class BuyDone(APIView):
-  def get(self, request, bid, format=None):
+  def post(self, request, bid, format=None):
+    pdb.set_trace()
+    # html 접근일 경우
     if request.accepted_renderer.format == 'html':
       if not request.user.is_authenticated():
         data = {'msg':'Query first', 'error_code':'999'}
         resp_status = status.HTTP_400_BAD_REQUEST
-        return Response(data, status=resp_status, template_name='buychange_get.html')
-      buy = Buy.objects.get(id=bid)
-      if buy:
-        initial_value = BuyModifySerializer(buy)
-        form = BuyModifyForm(initial=initial_value.data)
-        data = {'buy_form':form}
-        data['msg'] = 'Name : '+buy.user.username+'<'+buy.user.email+'>'
-        data['bid']= bid
-      else:
-        data = {'msg':'Buy request does not exists'}
-        resp_status = status.HTTP_400_BAD_REQUEST
-      return Response(data, template_name='buychange_get.html')
-    else:
-      data = "GET not allowed"
-      resp_status = status.HTTP_400_BAD_REQUEST
-      return Response(data, status = resp_status)
+        return Response(data, status=resp_status, template_name='buydone_result.html')
 
+      form = BuyDoneForm(request.POST)
+      if form.is_valid():
+        buy = Buy.objects.get(id=bid, is_done=False)
+        buy.satisfaction=int(form.data['satisfaction'])
+        buy.dealer_email=form.data['dealer_email']
+        if buy.dealer_email:
+          dealer = Dealer.objects.get(user=User.objects.get(email=buy.dealer_email))
+          total_score = dealer.reputation * float(dealer.num_sell) + float(buy.satisfaction)
+          dealer.num_sell += 1
+          total_score_int = total_score / float(dealer.num_sell) * 100
+          dealer.reputation = float(total_score_int) / 100.0
+          buy.delaer = dealer
+        buy.is_done = True
+        buy.done_date = datetime.now()
+        buy.save()
+        User.objects.filter(id=buy.user.id).delete()
+        data = {'buy':buy}
+        resp_status = status.HTTP_200_OK
+        logout(request)
+        return Response(data, status=resp_status, template_name='buydone_result.html')
+      else:
+        data = {'msg':'invalid form'}
+        resp_status = status.HTTP_400_BAD_REQUEST
+        return Response(data, status=resp_status, template_name='buydone_result.html')
+
+    # 모바일 접근일 경우
+    else:
+      changed_buy = BuyModifySerializer(data=request.DATA)
+      resp_status = status.HTTP_200_OK
+      return Response(status = resp_status)
 
 
 

@@ -53,6 +53,12 @@ class BuyModifyForm(ModelForm):
     model = Buy
     fields = ['maker', 'car', 'trim', 'cellphone', 'detail', 'addr1', 'addr2', 'zipcode', 'is_cancel']
 
+class BuyDoneForm(ModelForm):
+  class Meta:
+    model = Buy
+    fields = ['dealer_email', 'satisfaction']
+
+
 class UserForm(ModelForm):
   username = forms.CharField(max_length=30, help_text='user name')
   password = forms.CharField(widget=forms.PasswordInput())

@@ -1,5 +1,6 @@
 #-*- coding: utf-8 -*-
 from django.db import models
+from django.core.validators import MaxValueValidator
 from django.contrib.auth.models import User
 
 
@@ -46,6 +47,7 @@ class Dealer(models.Model):
     is_confirmed = models.BooleanField(default=False)
     num_seed = models.PositiveIntegerField(default=3)        # seed(견적 보낼 수 있는 횟수)
     num_send = models.PositiveIntegerField(default=0)        # 총 견적 송신 횟수
+    num_sell = models.PositiveIntegerField(default=0)        # 총 판매대수
     date_last_send = models.DateField(null=True)    # 최종 견적 송신 일자
     num_new_sell = models.PositiveIntegerField(default=0)    # 신차 판매 대수
     reputation = models.FloatField(default=3)                # 평판 (5점만점)
@@ -70,8 +72,8 @@ class Buy(models.Model):
     is_cancel = models.BooleanField(default=False)
     done_date = models.DateTimeField(null=True)   # 취소 또는 완료된 날짜
     dealer = models.ForeignKey(Dealer, null=True)    # 완료된 경우 성사된 딜러
-    dealer_email = models.EmailField(max_length=50, null=True)  # 성사된 딜러 메일
-    satisfaction = models.PositiveIntegerField(default=3)
+    dealer_email = models.EmailField(max_length=50, blank=True)  # 성사된 딜러 메일
+    satisfaction = models.PositiveIntegerField(default=3, validators=[MaxValueValidator(5)])
     def __unicode__(self):
         return self.user.username
 
