@@ -1,0 +1,32 @@
+<html>
+  <head>
+    <title>Register B</title>
+  </head>
+  <body>
+<p>Register B</p>
+<form method="post" action="./consumer/request">
+{% csrf_token %}
+maker {{ form.maker }}
+<div id="cid"></div>
+<div id="tid"></div>
+nickname {{ form.nickname }}<br>
+email {{ form.email }}<br>
+passwd {{ form.passwd }}<br>
+cellphone {{ form.cellphone}}<br>
+detail {{ form.detail }}<br>
+addr1 {{ form.addr1 }}<br>
+addr2 {{ form.addr2 }}<br>
+zipcode {{ form.zipcode }}<br>
+<input type="submit" value="Submit"/>
+</form>
+<script> 
+$("#{{form.mid.mid}}").change(function() {
+  $('#cid').load('{% url "get_cid" %}', {mid: $(this).value()})
+});
+$("#k").click(function() {
+  $('#cid').load('{% url "get_cid" %}', {mid: $(this).value()})
+});
+</script>
+</body>
+</html>
+

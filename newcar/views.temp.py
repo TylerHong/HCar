@@ -12,7 +12,7 @@ from django.forms.models import modelformset_factory
 from Crypto.Cipher import AES
 from newcar.models import Maker, Car, Trim, Nation, Address, Buy, Dealer
 from newcar.forms import BuyNewForm, BuyForm, BuyModifyForm, BuyDoneForm, UserForm
-from newcar.forms import DealerNewForm, DealerForm
+from newcar.forms import DealerNewForm
 from newcar.serializers import MakerSerializer, CarSerializer, TrimSerializer, AddressSerializer
 from newcar.serializers import BuyNewSerializer, LoginSerializer, BuyModifySerializer, BuySerializer
 from newcar.serializers import BuyListFreeSerializer, NewUserSerializer, NewDealerSerializer
@@ -488,33 +488,32 @@ class DealerRegister(APIView):
     pdb.set_trace()
     # html POST
     if request.accepted_renderer.format == 'html':
+      is_registered = False
       user_form = UserForm(request.POST)
-      dealer_form = DealerForm(request.POST)
+      dealer_form = DealerNewForm(request.POST)
       # check form's validity
       if user_form.is_valid() and dealer_form.is_valid():
         # check former undone request with same email
         old_users = User.objects.filter(email=user_form.cleaned_data['email'])
         if (old_users.count() > 0):
-          data = {'msg':'register failed. same email exists', 'errcode':'101'}
+          msg = 'register failed. same email exists'
+          resp_code = '101'
           resp_status = status.HTTP_409_CONFLICT
-        # save and send confirm email
         else:
-          try:
-            user = user_form.save(commit=False)
-            user.is_active = False
-            user.set_password(user.password) 
-            dealer = dealer_form.save(commit=False)
-            user.save()
-            dealer.user = user
-            dealer.phone = dealer.phone.translate({ord('-'):None})
-            dealer.save()
-          except StandardError:
-            if user:
-              User.objects.filter(id=user.id).delete()
-          else:
-            self.send_email(user.id, user.email)
-            data = {'msg':'saved', 'errcode':'000'}
-            resp_status = status.HTTP_201_CREATED
+          user = user_form.save(commit=False)
+          user.is_active = False
+          user.set_password(user.password) 
+          dealer = dealer_form.save(commit=False)
+          user.save()
+          dealer.user = user
+          dealer.phone = dealer.phone.translate({ord('-'):None})
+          dealer.save()
+          # send confirm mail after save
+          self.send_email(user.id, user.email)
+          msg = 'saved'
+          resp_code = '000'
+          resp_status = status.HTTP_201_CREATED
+          is_registered = True
       # invalid form
       else:
         msg = 'invalid form'
@@ -522,8 +521,9 @@ class DealerRegister(APIView):
           msg += ' - ' + str(user_form.errors)
         if not dealer_form.is_valid():
           msg += ' - ' + str(dealer_form.errors)
-        data = {'msg':msg, 'errcode':'103'}
+        resp_code = '103'
         resp_status = status.HTTP_400_BAD_REQUEST
+      data = {'msg':msg, 'resp code':resp_code}
       return Response(data, status = resp_status, template_name='dealer_register_result.html')
 
     # Mobile POST
@@ -567,10 +567,15 @@ class DealerRegister(APIView):
       return Response(status = resp_status)
 
 
+
+
+
+
+
 # View : confirm dealer
 class DealerConfirm(APIView):
   def get(self, request, id, format=None):
-    resp_status = status.HTTP_200_OK
+    respStatus = status.HTTP_200_OK
     if (int(id) <= 0):
       data = {'msg':'CONFIRM ERROR'}
     else:
@@ -634,9 +639,8 @@ class DealerLogin(APIView):
     pdb.set_trace()
     # HTML
     if request.accepted_renderer.format == 'html':
-      email = request.POST['email']
+      username = request.POST['username']
       password = request.POST['password']
-      username = User.objects.get(email=email).username
       user = authenticate(username=username, password=password)
       if user:
         dealer = Dealer.objects.get(user_id=user.id)
@@ -658,13 +662,11 @@ class DealerLogin(APIView):
 
     # Mobile
     else:
-      login = LoginSerializer(request.POST)
-      #email = request.DATA['email']
+      username = request.DATA['username']
 #      rawpass = request.DATA['password']
 #      password = self.decrypt(rawpass, '12345678901234567890123456789012')
-      #password = request.DATA['password']
-      username = User.objects.get(email=login.email).username
-      user = authenticate(username=username, password=login.password)
+      password = request.DATA['password']
+      user = authenticate(username=username, password=password)
       if user:
         dealer = Dealer.objects.get(user_id=user.id)
         if dealer and user.is_active and dealer.is_confirmed:
@@ -680,7 +682,6 @@ class DealerLogin(APIView):
 # View : dealer logout
 class DealerLogout(APIView):
   def get(self, request, format=None):
-    # HTML
     if request.accepted_renderer.format == 'html':
       if request.user.is_authenticated():
         logout(request)
@@ -693,7 +694,6 @@ class DealerLogout(APIView):
         resp_status = status.HTTP_400_BAD_REQUEST
       data = {'msg':msg, 'resp code':resp_code}
       return Response(data, status = resp_status, template_name='dealer_logout_result.html')
-    # Mobile
     else:
       return Response(status=status.HTTP_200_OK)
 

@@ -1,0 +1,14 @@
+<html>
+<body>
+{% if form %}
+  <form method="post" action="./consumer/modify">
+  {% csrf_token %}
+  {{ form.as_p }}
+  <input type="submit" value="Submit" />
+{% else %}
+  <p>No buy in such condition</p>
+  {{msg}}<br>
+  {{errcode}}<br>
+{% endif %}
+</body>
+</html>

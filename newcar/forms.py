@@ -20,7 +20,6 @@ class CascadeForm(forms.Form):
       if len(cars)==1:
         self.fields['car'].initial=cars[0].id
 
-# 웹 신규등록시 주소를 두단계로 구분하기 위함
 class BuyNewForm(ModelForm):
 #  mid = forms.ModelChoiceField(queryset=Maker.objects.all())
 #  cid = forms.ModelChoiceField(queryset=Car.objects.all())
@@ -65,6 +64,13 @@ class UserForm(ModelForm):
   class Meta:
     model = User
     fields = ('username', 'email', 'password')
+
+class DealerNewForm(ModelForm):
+  addr1 = forms.ModelChoiceField(Address.objects.distinct('addr1').values_list('addr1', flat=True))
+  addr2 = forms.ModelChoiceField(Address.objects.distinct('addr2').values_list('addr2', flat=True))
+  class Meta:
+    model = Dealer
+    fields = ['maker', 'branch', 'intro', 'phone', 'addr1', 'addr2', 'addr3']
 
 class DealerForm(ModelForm):
   class Meta:

@@ -1,0 +1,32 @@
+<html>
+<head>
+  <title>Change B</title>
+</head>
+
+<body>
+<p>Change B</p>
+{% if buy_form %}
+  <form method="post" action="/nuevo/consumer/modify/{{bid}}/">
+    {% csrf_token %}
+    {{ buy_form.as_p }}
+    <input type="submit" value="Submit" />
+  </form>
+{% else %}
+  <table>
+  <tr>
+  <td>
+  {{msg}}<br>
+  {% if error_code = '999' %}
+    </td><td>
+      <form action='/nuevo/consumer/query/' method="get">
+        <input type="submit" value='Query'/>
+      </form>
+  {% endif %}
+  </td>
+  </tr>
+  </table>
+{% endif %}
+<br>
+</body>
+</html>
+

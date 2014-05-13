@@ -38,18 +38,18 @@ class Trim(models.Model):
 class Dealer(models.Model):
     user = models.OneToOneField(User)
     maker = models.ForeignKey(Maker)
-    branch = models.CharField(max_length=20)    # 지점명
-    intro = models.TextField(null=True)         # 자기소개
+    branch = models.CharField(max_length=20)    
+    intro = models.TextField(null=True)       
     phone = models.CharField(max_length=12, null=False)
     addr1 = models.CharField(max_length=20)
     addr2 = models.CharField(max_length=30)
     addr3 = models.CharField(max_length=100, blank=True)
     is_confirmed = models.BooleanField(default=False)
-    num_seed = models.PositiveIntegerField(default=3)        # seed(견적 보낼 수 있는 횟수)
+    num_seed = models.PositiveIntegerField(default=3)        # seed(보낼 수 있는 횟수)
     num_send = models.PositiveIntegerField(default=0)        # 총 견적 송신 횟수
-    num_sell = models.PositiveIntegerField(default=0)        # 총 판매대수
+    num_sell = models.PositiveIntegerField(default=0)
     date_last_send = models.DateField(null=True)    # 최종 견적 송신 일자
-    num_new_sell = models.PositiveIntegerField(default=0)    # 신차 판매 대수
+    num_new_sell = models.PositiveIntegerField(default=0) 
     reputation = models.FloatField(default=3)                # 평판 (5점만점)
     def __unicode__(self):
         return self.user.username

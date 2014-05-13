@@ -1,0 +1,15 @@
+<html>
+	<head>
+		<title>Register D</title>
+	</head>
+	<body>
+<p>Register D<p>
+<form method="post" action="/nuevo/dealer/register">
+{% csrf_token %}
+{{ user_form.as_p }}
+{{ dealer_form.as_p }}
+<input type="submit" value="Submit" />
+</form>
+</body>
+</html>
+

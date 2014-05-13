@@ -1,0 +1,13 @@
+<html>
+<head>
+Buy done result
+</head>
+<body>
+{% if error_code %}
+    <p>{{msg}}</p><br><br>
+    <p>{{error_code}}</p><br><br>
+{% else %}
+    <p>{{msg}}</p>
+{% endif %}
+</body>
+</html>

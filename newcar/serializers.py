@@ -23,7 +23,8 @@ class AddressSerializer(serializers.ModelSerializer):
     model = Address
     fields = ('id', 'nation', 'addr1', 'addr2')
 
-# 구매요청 등록 시 사용
+
+
 class BuyNewSerializer(serializers.ModelSerializer):
   class Meta:
     model = Buy
@@ -38,11 +39,16 @@ class BuyModifySerializer(serializers.ModelSerializer):
 class BuyDoneSerializer(serializers.ModelSerializer):
   class Meta:
     model = Buy
-    fields = ('maker', 'car', 'trim', 'is__lease', 'is_new', 'cellphone', 'detail', 'addr1', 'addr2', 'zipcode')
+    fields = ('maker', 'car', 'trim', 'is_lease', 'is_new', 'cellphone', 'detail', 'addr1', 'addr2', 'zipcode')
+
+class BuySerializer(serializers.ModelSerializer):
+  class Meta:
+    model = Buy
+    fields = ('id', 'maker', 'car', 'trim', 'is_lease', 'is_new', 'cellphone', 'detail', 'addr1', 'addr2', 'zipcode')
 
 
 
-# 무료로 조회 가능한 구매요청 목록
+
 class BuyListFreeSerializer(serializers.ModelSerializer):
   class Meta:
     model = Buy
